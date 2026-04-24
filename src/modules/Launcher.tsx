@@ -39,12 +39,12 @@ export default function Launcher({ onSelect }: LauncherProps) {
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center gap-3 mb-4"
+          className="flex items-center gap-2 mb-6"
         >
-          <div className="w-10 h-10 bg-red-600 rounded-2xl flex items-center justify-center shadow-lg shadow-red-900/20">
-            <LayoutGrid className="w-6 h-6 text-white stroke-[2.5]" />
+          <span className="text-2xl font-black uppercase tracking-tighter text-white">Zona</span>
+          <div className="bg-red-600 text-black px-5 py-1.5 rounded-full shadow-lg shadow-red-900/20 whitespace-nowrap">
+            <span className="text-xl font-black uppercase tracking-tighter leading-none">Foco</span>
           </div>
-          <h1 className="text-3xl font-black uppercase tracking-tighter">Organized</h1>
         </motion.div>
         <motion.p 
           initial={{ opacity: 0 }}

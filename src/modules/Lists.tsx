@@ -150,7 +150,7 @@ function ListItemComponent({
   );
 }
 
-export default function Lists() {
+export default function Lists({ onBack }: { onBack: () => void }) {
   const { 
     lists, 
     addList, 
@@ -210,14 +210,12 @@ export default function Lists() {
       <header className="px-6 pt-10 mb-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            {activeListId && (
-              <button 
-                onClick={() => setActiveListId(null)}
-                className="w-10 h-10 bg-zinc-900/50 rounded-xl flex items-center justify-center text-zinc-500 hover:text-white transition-all shadow-xl"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </button>
-            )}
+            <button 
+              onClick={activeListId ? () => setActiveListId(null) : onBack}
+              className="w-10 h-10 bg-zinc-900/50 rounded-xl flex items-center justify-center text-zinc-500 hover:text-white transition-all shadow-xl"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
             <div>
               <h1 className="text-2xl font-black uppercase tracking-tighter leading-none">
                 {activeList ? activeList.name : 'Suas Listas'}

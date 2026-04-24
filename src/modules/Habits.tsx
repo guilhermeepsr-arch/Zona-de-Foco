@@ -18,7 +18,7 @@ import {
 import { ptBR } from 'date-fns/locale';
 import { useAppStore } from '../store/useAppStore';
 import { Card, Modal, cn, Button, FAB } from '../components/UI';
-import { Plus, Trash2, Check, GripVertical, Settings2, Zap, Flame, Calendar as CalendarIcon, Info } from 'lucide-react';
+import { Plus, Trash2, Check, GripVertical, Settings2, Zap, Flame, Calendar as CalendarIcon, Info, ChevronLeft } from 'lucide-react';
 import { Habit } from '../types';
 
 // --- Helpers ---
@@ -169,7 +169,7 @@ function HabitItem({
 }
 
 
-export default function Habits() {
+export default function Habits({ onBack }: { onBack: () => void }) {
   const { 
     habits, 
     addHabit, 
@@ -221,6 +221,12 @@ export default function Habits() {
       <header className="px-6 pt-10 mb-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
+            <button 
+              onClick={onBack}
+              className="w-10 h-10 bg-zinc-950 rounded-xl flex items-center justify-center text-zinc-500 hover:text-white transition-all shadow-xl"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
             <div className="w-9 h-9 bg-red-600 rounded-xl flex items-center justify-center shadow-lg shadow-red-900/20">
               <Check className="w-5 h-5 text-white stroke-[3]" />
             </div>

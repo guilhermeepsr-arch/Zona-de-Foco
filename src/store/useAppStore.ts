@@ -170,6 +170,36 @@ export const useAppStore = create<AppState & AppActions>()(
         }));
       },
 
+      clearGoalEntries: (goalId) => {
+        set((state) => ({
+          goals: state.goals.map((g) =>
+            g.id === goalId ? { ...g, entries: [] } : g
+          ),
+        }));
+      },
+
+      archiveGoalProgress: (goalId) => {
+        const state = get();
+        const goal = state.goals.find(g => g.id === goalId);
+        if (!goal || !goal.currentTarget) return;
+
+        const historyEntry = {
+          target: goal.currentTarget,
+          entries: [...goal.entries]
+        };
+
+        set((state) => ({
+          goals: state.goals.map((g) =>
+            g.id === goalId ? { 
+              ...g, 
+              entries: [], 
+              currentTarget: undefined,
+              history: [...(g.history || []), historyEntry] 
+            } : g
+          ),
+        }));
+      },
+
       deleteGoal: (id) =>
         set((state) => ({
           goals: state.goals.filter((g) => g.id !== id),

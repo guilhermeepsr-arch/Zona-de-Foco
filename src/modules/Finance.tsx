@@ -13,7 +13,7 @@ import { Transaction } from '../types';
 
 type Filter = 'all' | 'pending' | 'paid';
 
-export default function Finance() {
+export default function Finance({ onBack }: { onBack: () => void }) {
   const { transactions, addTransaction, toggleTransaction, deleteTransaction, updateTransaction } = useAppStore();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -45,13 +45,15 @@ export default function Finance() {
   }, [transactions, currentMonth, filter]);
 
   const summary = useMemo(() => {
-    const income = transactions
+    // Actual (Realizado) - Only completed transactions
+    const actualIncome = transactions
       .filter((t) => t.date && isSameMonth(t.date, currentMonth) && t.type === 'income' && t.completed)
       .reduce((acc, t) => acc + t.value, 0);
-    const expense = transactions
+    const actualExpense = transactions
       .filter((t) => t.date && isSameMonth(t.date, currentMonth) && t.type === 'expense' && t.completed)
       .reduce((acc, t) => acc + t.value, 0);
     
+    // Predicted (Previsto) - All transactions for the month
     const predictedIncome = transactions
       .filter((t) => t.date && isSameMonth(t.date, currentMonth) && t.type === 'income')
       .reduce((acc, t) => acc + t.value, 0);
@@ -59,7 +61,14 @@ export default function Finance() {
       .filter((t) => t.date && isSameMonth(t.date, currentMonth) && t.type === 'expense')
       .reduce((acc, t) => acc + t.value, 0);
 
-    return { income, expense, balance: income - expense, predictedIncome, predictedExpense };
+    return { 
+      actualIncome, 
+      actualExpense, 
+      actualBalance: actualIncome - actualExpense, 
+      predictedIncome, 
+      predictedExpense,
+      predictedBalance: predictedIncome - predictedExpense
+    };
   }, [transactions, currentMonth]);
 
   const groupedTransactions = useMemo(() => {
@@ -150,6 +159,12 @@ export default function Finance() {
       <header className="px-6 pt-10 mb-8">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
+            <button 
+              onClick={onBack}
+              className="w-10 h-10 bg-zinc-950 rounded-xl flex items-center justify-center text-zinc-500 hover:text-white transition-all shadow-xl"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
             <div className="w-9 h-9 bg-red-600 rounded-xl flex items-center justify-center shadow-lg shadow-red-900/20">
               <LayoutGrid className="w-5 h-5 text-white" />
             </div>
@@ -201,24 +216,59 @@ export default function Finance() {
           </div>
 
           {/* Unified Row Summary */}
-          <div className="grid grid-cols-3 gap-0.5 bg-zinc-900/40 rounded-xl border border-white/5 divide-x divide-white/5 overflow-hidden">
-            <div className="p-3 text-center">
-              <p className="text-[7px] font-black text-zinc-500 uppercase tracking-widest mb-1">Saldo Real</p>
-              <p className={cn("text-[11px] font-black", summary.balance >= 0 ? "text-white" : "text-red-500")}>
-                {formatCurrency(summary.balance)}
-              </p>
+          <div className="space-y-4">
+            {/* Atual Section */}
+            <div className="bg-zinc-900/60 rounded-xl border border-white/5 overflow-hidden">
+              <div className="px-3 py-1.5 bg-zinc-800/20 border-b border-white/5">
+                <p className="text-[6px] font-black text-zinc-500 uppercase tracking-[0.2em]">Fluxo Atual (Efivado)</p>
+              </div>
+              <div className="grid grid-cols-3 divide-x divide-white/5">
+                <div className="p-3 text-center">
+                  <p className="text-[7px] font-black text-zinc-500 uppercase tracking-widest mb-1">Saldo</p>
+                  <p className={cn("text-[11px] font-black", summary.actualBalance >= 0 ? "text-white" : "text-red-500")}>
+                    {formatCurrency(summary.actualBalance)}
+                  </p>
+                </div>
+                <div className="p-3 text-center">
+                  <p className="text-[7px] font-black text-zinc-500 uppercase tracking-widest mb-1">Entradas</p>
+                  <p className="text-[11px] font-black text-green-500">
+                    {formatCurrency(summary.actualIncome)}
+                  </p>
+                </div>
+                <div className="p-3 text-center">
+                  <p className="text-[7px] font-black text-zinc-500 uppercase tracking-widest mb-1">Saídas</p>
+                  <p className="text-[11px] font-black text-red-500">
+                    {formatCurrency(summary.actualExpense)}
+                  </p>
+                </div>
+              </div>
             </div>
-            <div className="p-3 text-center">
-              <p className="text-[7px] font-black text-zinc-500 uppercase tracking-widest mb-1">Entradas</p>
-              <p className="text-[11px] font-black text-green-500">
-                {formatCurrency(summary.predictedIncome)}
-              </p>
-            </div>
-            <div className="p-3 text-center">
-              <p className="text-[7px] font-black text-zinc-500 uppercase tracking-widest mb-1">Saídas</p>
-              <p className="text-[11px] font-black text-red-500">
-                {formatCurrency(summary.predictedExpense)}
-              </p>
+
+            {/* Previsto Section (More Discrete) */}
+            <div className="bg-zinc-900/30 rounded-xl border border-white/5 overflow-hidden opacity-60">
+              <div className="px-3 py-1 bg-zinc-900/40 border-b border-white/5">
+                <p className="text-[6px] font-black text-zinc-500 uppercase tracking-[0.2em]">Previsão Mensal (Total)</p>
+              </div>
+              <div className="grid grid-cols-3 divide-x divide-white/5">
+                <div className="p-2.5 text-center">
+                  <p className="text-[6px] font-black text-zinc-600 uppercase tracking-widest mb-0.5">Saldo</p>
+                  <p className={cn("text-[9px] font-bold", summary.predictedBalance >= 0 ? "text-zinc-300" : "text-red-900")}>
+                    {formatCurrency(summary.predictedBalance)}
+                  </p>
+                </div>
+                <div className="p-2.5 text-center">
+                  <p className="text-[6px] font-black text-zinc-600 uppercase tracking-widest mb-0.5">Entradas</p>
+                  <p className="text-[9px] font-bold text-green-900">
+                    {formatCurrency(summary.predictedIncome)}
+                  </p>
+                </div>
+                <div className="p-2.5 text-center">
+                  <p className="text-[6px] font-black text-zinc-600 uppercase tracking-widest mb-0.5">Saídas</p>
+                  <p className="text-[9px] font-bold text-red-900">
+                    {formatCurrency(summary.predictedExpense)}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </Card>

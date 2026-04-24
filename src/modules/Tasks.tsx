@@ -93,7 +93,7 @@ function TaskItem({
   );
 }
 
-export default function Tasks() {
+export default function Tasks({ onBack }: { onBack: () => void }) {
   const { tasks, addTask, toggleTask, deleteTask, updateTask, reorderTasks, frequentTasks, addFrequentTask, deleteFrequentTask } = useAppStore();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -199,6 +199,12 @@ export default function Tasks() {
       <header className="px-6 pt-10 mb-8">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
+            <button 
+              onClick={onBack}
+              className="w-10 h-10 bg-zinc-950 rounded-xl flex items-center justify-center text-zinc-500 hover:text-white transition-all shadow-xl"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
             <div className="w-9 h-9 bg-red-600 rounded-xl flex items-center justify-center shadow-lg shadow-red-900/40">
               <Rocket className="w-5 h-5 text-white stroke-[2.5]" />
             </div>

@@ -4,14 +4,14 @@
  */
 
 import React, { useState, useMemo } from 'react';
-import { differenceInDays, parseISO, startOfDay, format, isSameDay } from 'date-fns';
+import { differenceInDays, parseISO, startOfDay, format, isSameDay, isToday } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useAppStore } from '../store/useAppStore';
 import { Card, Button, Modal, ProgressBar, cn } from '../components/UI';
-import { Plus, Trash2, Undo2, TrendingUp, AlertCircle, CheckCircle2, ArrowLeft, Edit2, History, Target, Calendar, Clock } from 'lucide-react';
+import { Plus, Trash2, Undo2, TrendingUp, AlertCircle, CheckCircle2, ArrowLeft, Edit2, History, Target, Calendar, Clock, ChevronLeft, Archive } from 'lucide-react';
 import { Goal, GoalEntry, GoalTarget } from '../types';
 
-export default function Goals() {
+export default function Goals({ onBack }: { onBack: () => void }) {
   const { goals, addGoal, addGoalEntry, undoLastGoalEntry, deleteGoal, updateGoal } = useAppStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
@@ -85,6 +85,12 @@ export default function Goals() {
     <div className="pb-32 bg-[#080808] min-h-screen">
       <header className="px-6 pt-10 mb-8 flex items-center justify-between">
         <div className="flex items-center gap-3">
+          <button 
+            onClick={onBack}
+            className="w-10 h-10 bg-zinc-950 rounded-xl flex items-center justify-center text-zinc-500 hover:text-white transition-all shadow-xl"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
           <div className="w-9 h-9 bg-red-600 rounded-xl flex items-center justify-center shadow-lg shadow-red-900/20">
             <Target className="w-6 h-6 text-white stroke-[2.5]" />
           </div>
@@ -219,6 +225,10 @@ function GoalMiniCard({ goal, onAdd, onClick }: { goal: Goal; onAdd: (val: numbe
   const [quickValue, setQuickValue] = useState('');
   const total = (goal.entries || []).reduce((acc, e) => acc + e.value, 0);
   
+  const todayTotal = (goal.entries || [])
+    .filter(e => isToday(parseISO(e.date)))
+    .reduce((acc, e) => acc + e.value, 0);
+
   const handleQuickAdd = (e: React.FormEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -246,8 +256,12 @@ function GoalMiniCard({ goal, onAdd, onClick }: { goal: Goal; onAdd: (val: numbe
           </div>
         </div>
         <div className="text-right">
-          <p className="text-2xl font-black text-white tracking-tighter leading-none">{total}</p>
-          <p className="text-[8px] font-black text-zinc-600 uppercase tracking-widest mt-1">Acumulado</p>
+          <p className="text-2xl font-black text-white tracking-tighter leading-none">{todayTotal}</p>
+          <p className="text-[8px] font-black text-zinc-600 uppercase tracking-widest mt-1">Hoje</p>
+          <div className="mt-1 flex items-center justify-end gap-1 opacity-40">
+             <span className="text-[7px] font-black text-zinc-500 uppercase tracking-widest">Total:</span>
+             <span className="text-[7px] font-mono text-zinc-400">{total}</span>
+          </div>
         </div>
       </div>
 
@@ -286,10 +300,11 @@ function GoalMiniCard({ goal, onAdd, onClick }: { goal: Goal; onAdd: (val: numbe
 }
 
 function GoalPane({ goal, onClose, onSetTarget }: { goal: Goal; onClose: () => void; onSetTarget: () => void }) {
-  const { addGoalEntry, undoLastGoalEntry, deleteGoal, updateGoal } = useAppStore();
+  const { addGoalEntry, undoLastGoalEntry, deleteGoal, updateGoal, clearGoalEntries, archiveGoalProgress } = useAppStore();
   const [addValue, setAddValue] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
+  const [isConfirmingReset, setIsConfirmingReset] = useState(false);
   const [editName, setEditName] = useState(goal.name);
   const [editIcon, setEditIcon] = useState(goal.icon || '🎯');
   const [editUnit, setEditUnit] = useState(goal.unit);
@@ -339,8 +354,17 @@ function GoalPane({ goal, onClose, onSetTarget }: { goal: Goal; onClose: () => v
     setIsEditing(false);
   };
 
+  const handleReset = () => {
+    clearGoalEntries(goal.id);
+    setIsConfirmingReset(false);
+  };
+
+  const handleArchive = () => {
+    archiveGoalProgress(goal.id);
+  };
+
   return (
-    <div className="space-y-8 pb-4">
+    <div className="space-y-6 pb-20">
       {/* Pane Header */}
       <div className="flex items-center justify-between -mt-2">
         <button onClick={onClose} className="p-2 -ml-2 text-zinc-500 hover:text-white transition-colors">
@@ -360,17 +384,17 @@ function GoalPane({ goal, onClose, onSetTarget }: { goal: Goal; onClose: () => v
                    {isIconPickerOpen && (
                      <div className="absolute top-12 left-0 bg-[#1a1a1a] border border-white/10 shadow-2xl rounded-xl p-3 z-50 grid grid-cols-4 gap-2 w-48 animate-in fade-in zoom-in duration-200">
                         {['🎯', '💧', '🏃', '📚', '💪', '💰', '🔥', '⭐️', '🍎', '🧘', '⚡️', '🚲', '🏋️', '🏊', '🥊', '🥗', '☕️', '🛌', '💻', '🌱'].map(emoji => (
-                          <button 
-                            key={emoji} 
-                            type="button"
-                            onClick={() => {
-                              setEditIcon(emoji);
-                              setIsIconPickerOpen(false);
-                            }}
-                            className="w-8 h-8 flex items-center justify-center hover:bg-zinc-800 rounded-lg text-lg transition-colors border border-transparent hover:border-white/5"
-                          >
-                            {emoji}
-                          </button>
+                           <button 
+                             key={emoji} 
+                             type="button"
+                             onClick={() => {
+                               setEditIcon(emoji);
+                               setIsIconPickerOpen(false);
+                             }}
+                             className="w-8 h-8 flex items-center justify-center hover:bg-zinc-800 rounded-lg text-lg transition-colors border border-transparent hover:border-white/5"
+                           >
+                             {emoji}
+                           </button>
                         ))}
                      </div>
                    )}
@@ -447,32 +471,9 @@ function GoalPane({ goal, onClose, onSetTarget }: { goal: Goal; onClose: () => v
         </div>
       </div>
 
-      {/* Target Stats Section */}
-      {goal.currentTarget && stats && (
-        <div className="bg-[#111111] rounded-xl p-8 border border-white/5 shadow-2xl relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-4">
-            <StatusTag goal={goal} large />
-          </div>
-          
-          <div className="mb-8">
-            <div className="flex justify-between items-end mb-3 px-1">
-               <span className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">Alvo Progresso</span>
-               <span className="text-xs font-mono text-white font-black">{total} / {goal.currentTarget.value} {goal.unit}</span>
-            </div>
-            <ProgressBar progress={stats.progress} color="red" />
-          </div>
-
-          <div className="grid grid-cols-2 gap-y-8 gap-x-6">
-            <StatItem label="Ritmo Necessário" value={`${stats.requiredPerDay.toFixed(1)} ${goal.unit}/dia`} />
-            <StatItem label="Média Atual" value={`${stats.currentAverage.toFixed(1)} ${goal.unit}/dia`} />
-            <StatItem label="Dias Restantes" value={`${stats.daysRemaining} dias`} />
-            <StatItem label="Progresso" value={`${Math.round(stats.progress)}%`} />
-          </div>
-        </div>
-      )}
-
-      {/* Actions Section */}
+      {/* Target Stats Section (MOVED DOWN) */}
       <div className="space-y-4">
+        {/* Actions Section (MOVED UP) */}
         <div className="bg-zinc-900/30 rounded-xl p-6 border border-white/5">
           <p className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.2em] mb-6 text-center">Registrar Progresso</p>
           <form onSubmit={handleAddValue} className="flex gap-2">
@@ -491,21 +492,70 @@ function GoalPane({ goal, onClose, onSetTarget }: { goal: Goal; onClose: () => v
             </button>
           </form>
           
-          <div className="flex gap-3 mt-6">
+          <div className="flex flex-wrap gap-2 mt-6">
             <button 
               onClick={undoLastGoalEntry}
-              className="flex-1 py-4 bg-zinc-900/50 hover:bg-zinc-900 rounded-lg border border-white/5 text-[10px] font-black text-zinc-500 uppercase tracking-widest flex items-center justify-center gap-2 transition-all"
+              className="flex-1 py-3 bg-zinc-900/50 hover:bg-zinc-900 rounded-lg border border-white/5 text-[9px] font-black text-zinc-500 uppercase tracking-widest flex items-center justify-center gap-2 transition-all"
             >
-              <Undo2 className="w-4 h-4" /> Desfazer Última
+              <Undo2 className="w-3.5 h-3.5" /> Desfazer
             </button>
+            
+            {isConfirmingReset ? (
+               <div className="flex-1 flex gap-2">
+                 <button onClick={() => setIsConfirmingReset(false)} className="flex-1 py-3 text-[8px] font-black text-zinc-500 uppercase">Não</button>
+                 <button onClick={handleReset} className="flex-1 py-3 bg-red-900 text-white rounded-lg text-[8px] font-black uppercase">Zerar</button>
+               </div>
+            ) : (
+                <button 
+                  onClick={() => setIsConfirmingReset(true)}
+                  className="flex-1 py-3 bg-zinc-900/50 hover:bg-zinc-900 rounded-lg border border-white/5 text-[9px] font-black text-zinc-500 uppercase tracking-widest flex items-center justify-center gap-2 transition-all"
+                >
+                  <Trash2 className="w-3.5 h-3.5 text-red-900" /> Zerar Tudo
+                </button>
+            )}
+
             <button 
-              onClick={onSetTarget}
-              className="flex-1 py-4 bg-red-600/10 hover:bg-red-600 rounded-lg border border-red-600/20 text-[10px] font-black text-red-500 hover:text-white uppercase tracking-widest flex items-center justify-center gap-2 transition-all"
+              onClick={goal.currentTarget ? handleArchive : onSetTarget}
+              className="w-full py-4 bg-red-600/10 hover:bg-red-600 rounded-lg border border-red-600/20 text-[10px] font-black text-red-500 hover:text-white uppercase tracking-widest flex items-center justify-center gap-2 transition-all"
             >
-              <Target className="w-4 h-4" /> {goal.currentTarget ? "Novo Alvo" : "Criar Alvo"}
+              {goal.currentTarget ? <><Archive className="w-4 h-4" /> Arquivar e Finalizar Ciclo</> : <><Target className="w-4 h-4" /> Criar Novo Alvo</>}
             </button>
+            
+            {!goal.currentTarget && goal.history && goal.history.length > 0 && (
+               <button 
+                 onClick={onSetTarget}
+                 className="w-full py-4 bg-zinc-800 rounded-lg text-[10px] font-black text-white uppercase tracking-widest flex items-center justify-center gap-2 transition-all"
+               >
+                 <Target className="w-4 h-4" /> Novo Ciclo de Alvo
+               </button>
+            )}
           </div>
         </div>
+
+        {goal.currentTarget && stats && (
+          <div className="bg-[#111111] rounded-xl p-8 border border-white/5 shadow-2xl relative overflow-hidden">
+            <div className="flex flex-col gap-6">
+              <div>
+                <div className="flex justify-between items-center mb-4">
+                  <span className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">Alvo Progresso</span>
+                  <StatusTag goal={goal} />
+                </div>
+                <div className="flex justify-between items-end mb-3 px-1">
+                   <span className="text-xs font-mono text-white font-black">{total} / {goal.currentTarget.value} {goal.unit}</span>
+                   <span className="text-[10px] font-mono text-zinc-500">{Math.round(stats.progress)}%</span>
+                </div>
+                <ProgressBar progress={stats.progress} color="red" />
+              </div>
+
+              <div className="grid grid-cols-2 gap-y-8 gap-x-6">
+                <StatItem label="Ritmo Necessário" value={`${stats.requiredPerDay.toFixed(1)} ${goal.unit}/dia`} />
+                <StatItem label="Média Atual" value={`${stats.currentAverage.toFixed(1)} ${goal.unit}/dia`} />
+                <StatItem label="Dias Restantes" value={`${stats.daysRemaining} dias`} />
+                <StatItem label="Progresso" value={`${Math.round(stats.progress)}%`} />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* History Section */}

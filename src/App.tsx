@@ -19,22 +19,24 @@ type Module = 'launcher' | 'finance' | 'tasks' | 'goals' | 'habits' | 'lists' | 
 export default function App() {
   const [activeModule, setActiveModule] = useState<Module>('launcher');
 
+  const handleBack = () => setActiveModule('launcher');
+
   const renderModule = () => {
     switch (activeModule) {
       case 'launcher':
         return <Launcher onSelect={setActiveModule} />;
       case 'finance':
-        return <Finance />;
+        return <Finance onBack={handleBack} />;
       case 'tasks':
-        return <Tasks />;
+        return <Tasks onBack={handleBack} />;
       case 'goals':
-        return <Goals />;
+        return <Goals onBack={handleBack} />;
       case 'habits':
-        return <Habits />;
+        return <Habits onBack={handleBack} />;
       case 'lists':
-        return <Lists />;
+        return <Lists onBack={handleBack} />;
       case 'diary':
-        return <Diary />;
+        return <Diary onBack={handleBack} />;
       default:
         return <Launcher onSelect={setActiveModule} />;
     }
@@ -47,41 +49,67 @@ export default function App() {
         {renderModule()}
       </main>
 
-      {/* Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-[#0c0c0c]/80 backdrop-blur-xl border-t border-white/5 z-50">
-        <div className="max-w-md mx-auto flex justify-around items-center h-20 px-2">
-          <NavButton
-            active={activeModule === 'launcher'}
-            onClick={() => setActiveModule('launcher')}
-            icon={<LayoutGrid className="w-5 h-5" />}
-            label="Início"
-          />
-          <NavButton
-            active={activeModule === 'diary'}
-            onClick={() => setActiveModule('diary')}
-            icon={<BookOpen className="w-5 h-5" />}
-            label="Diário"
-          />
-          <NavButton
-            active={activeModule === 'tasks'}
-            onClick={() => setActiveModule('tasks')}
-            icon={<CheckSquare className="w-5 h-5" />}
-            label="Tarefas"
-          />
-          <NavButton
-            active={activeModule === 'finance'}
-            onClick={() => setActiveModule('finance')}
-            icon={<Wallet className="w-5 h-5" />}
-            label="Dinheiro"
-          />
-          <NavButton
-            active={activeModule === 'habits'}
-            onClick={() => setActiveModule('habits')}
-            icon={<Calendar className="w-5 h-5" />}
-            label="Hábitos"
-          />
-        </div>
-      </nav>
+      {/* Contextual Navigation */}
+      {activeModule !== 'launcher' && (
+        <nav className="fixed bottom-0 left-0 right-0 bg-[#0c0c0c]/80 backdrop-blur-xl border-t border-white/5 z-50">
+          <div className="max-w-md mx-auto flex justify-around items-center h-20 px-2 overflow-x-auto no-scrollbar">
+            <NavButton
+              active={false}
+              onClick={() => setActiveModule('launcher')}
+              icon={<LayoutGrid className="w-5 h-5" />}
+              label="Launcher"
+            />
+            {activeModule !== 'finance' && (
+              <NavButton
+                active={false}
+                onClick={() => setActiveModule('finance')}
+                icon={<Wallet className="w-5 h-5" />}
+                label="Dinheiro"
+              />
+            )}
+            {activeModule !== 'tasks' && (
+              <NavButton
+                active={false}
+                onClick={() => setActiveModule('tasks')}
+                icon={<CheckSquare className="w-5 h-5" />}
+                label="Tarefas"
+              />
+            )}
+            {activeModule !== 'goals' && (
+              <NavButton
+                active={false}
+                onClick={() => setActiveModule('goals')}
+                icon={<Target className="w-5 h-5" />}
+                label="Metas"
+              />
+            )}
+            {activeModule !== 'habits' && (
+              <NavButton
+                active={false}
+                onClick={() => setActiveModule('habits')}
+                icon={<Calendar className="w-5 h-5" />}
+                label="Hábitos"
+              />
+            )}
+            {activeModule !== 'lists' && (
+              <NavButton
+                active={false}
+                onClick={() => setActiveModule('lists')}
+                icon={<ListChecks className="w-5 h-5" />}
+                label="Listas"
+              />
+            )}
+            {activeModule !== 'diary' && (
+              <NavButton
+                active={false}
+                onClick={() => setActiveModule('diary')}
+                icon={<BookOpen className="w-5 h-5" />}
+                label="Diário"
+              />
+            )}
+          </div>
+        </nav>
+      )}
     </div>
   );
 }

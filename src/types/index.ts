@@ -124,6 +124,8 @@ export interface AppActions {
   addGoal: (goal: Omit<Goal, 'id' | 'entries'> & { entries?: GoalEntry[] }) => void;
   addGoalEntry: (goalId: string, value: number) => void;
   undoLastGoalEntry: (goalId: string) => void;
+  clearGoalEntries: (goalId: string) => void;
+  archiveGoalProgress: (goalId: string) => void;
   deleteGoal: (id: string) => void;
   updateGoal: (id: string, data: Partial<Goal>) => void;
 

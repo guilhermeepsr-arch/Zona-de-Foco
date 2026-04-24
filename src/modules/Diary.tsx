@@ -22,7 +22,7 @@ import { format, addDays, subDays, startOfToday, parseISO, isSameDay } from 'dat
 import { ptBR } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'motion/react';
 
-export default function Diary() {
+export default function Diary({ onBack }: { onBack: () => void }) {
   const { diaryEntries, diaryTemplates, saveDiaryEntry, addDiaryTemplate, deleteDiaryTemplate } = useAppStore();
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [noteContent, setNoteContent] = useState('');
@@ -80,11 +80,19 @@ export default function Diary() {
   return (
     <div className="pb-32 bg-[#080808] min-h-screen text-white">
       <header className="px-6 pt-10 mb-8">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-9 h-9 bg-red-600 rounded-xl flex items-center justify-center shadow-lg shadow-red-900/20">
-            <BookOpen className="w-5 h-5 text-white stroke-[2.5]" />
+        <div className="flex items-center gap-4 mb-4">
+          <button 
+            onClick={onBack}
+            className="w-10 h-10 bg-zinc-950 rounded-xl flex items-center justify-center text-zinc-500 hover:text-white transition-all shadow-xl"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 bg-red-600 rounded-xl flex items-center justify-center shadow-lg shadow-red-900/20">
+              <BookOpen className="w-5 h-5 text-white stroke-[2.5]" />
+            </div>
+            <h1 className="text-xl font-black text-white uppercase tracking-tighter">Diário</h1>
           </div>
-          <h1 className="text-xl font-black text-white uppercase tracking-tighter">Diário</h1>
         </div>
         <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] ml-1">Sua jornada, dia após dia.</p>
       </header>
