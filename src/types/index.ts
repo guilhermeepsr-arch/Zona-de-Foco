@@ -50,6 +50,7 @@ export interface Goal {
   name: string;
   unit: string;
   icon?: string;
+  quickButtons?: number[];
   entries: GoalEntry[];
   currentTarget?: GoalTarget;
   history?: {
