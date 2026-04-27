@@ -78,23 +78,15 @@ export default function Diary({ onBack }: { onBack: () => void }) {
   };
 
   return (
-    <div className="pb-32 bg-[#080808] min-h-screen text-white">
+    <div className="pb-32 bg-[#f8f8f8] min-h-screen text-zinc-900">
       <header className="px-6 pt-10 mb-8">
-        <div className="flex items-center gap-4 mb-4">
-          <button 
-            onClick={onBack}
-            className="w-10 h-10 bg-zinc-950 rounded-xl flex items-center justify-center text-zinc-500 hover:text-white transition-all shadow-xl"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-red-600 rounded-xl flex items-center justify-center shadow-lg shadow-red-900/20">
-              <BookOpen className="w-5 h-5 text-white stroke-[2.5]" />
-            </div>
-            <h1 className="text-xl font-black text-white uppercase tracking-tighter">Diário</h1>
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 bg-red-600 rounded-xl flex items-center justify-center shadow-lg shadow-red-900/10">
+            <BookOpen className="w-5 h-5 text-white stroke-[2.5]" />
           </div>
+          <h1 className="text-xl font-black text-zinc-900 uppercase tracking-tighter">Diário</h1>
         </div>
-        <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] ml-1">Sua jornada, dia após dia.</p>
+        <p className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mt-3 ml-1">Sua jornada, dia após dia.</p>
       </header>
 
       <main className="px-6 relative">
@@ -118,20 +110,23 @@ export default function Diary({ onBack }: { onBack: () => void }) {
                 className={cn(
                   "relative p-6 rounded-[2rem] border-2 transition-all cursor-pointer text-center",
                   isToday 
-                    ? "bg-red-600 border-red-500 shadow-2xl shadow-red-900/30 scale-105 z-10" 
+                    ? "bg-red-600 border-red-500 shadow-2xl shadow-red-900/10 scale-105 z-10" 
                     : hasEntry
-                      ? "bg-zinc-900/40 border-white/10"
-                      : "bg-[#111111] border-white/5 opacity-60"
+                      ? "bg-white border-zinc-200 shadow-sm"
+                      : "bg-zinc-100/50 border-zinc-100 opacity-60"
                 )}
               >
                 <div className="flex flex-col items-center gap-1">
                   <span className={cn(
                     "text-xs font-black uppercase tracking-[0.3em]",
-                    isToday ? "text-white" : "text-zinc-500"
+                    isToday ? "text-white" : "text-zinc-400"
                   )}>
                     {format(date, 'EEEE', { locale: ptBR })}
                   </span>
-                  <span className="text-2xl font-black tracking-tighter">
+                  <span className={cn(
+                    "text-2xl font-black tracking-tighter",
+                    isToday ? "text-white" : "text-zinc-900"
+                  )}>
                     {format(date, 'dd/MM/yyyy')}
                   </span>
                   {hasEntry && !isToday && (
@@ -156,14 +151,14 @@ export default function Diary({ onBack }: { onBack: () => void }) {
               <button
                 key={template.id}
                 onClick={() => applyTemplate(template.content)}
-                className="px-4 py-2 bg-zinc-900 border border-white/5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-zinc-800 transition-colors whitespace-nowrap"
+                className="px-4 py-2 bg-zinc-100 border border-zinc-200 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-zinc-200 transition-colors whitespace-nowrap text-zinc-900"
               >
                 + {template.name}
               </button>
             ))}
             <button
               onClick={() => setIsTemplateModalOpen(true)}
-              className="px-4 py-2 bg-red-600/10 text-red-500 border border-red-600/20 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-600 hover:text-white transition-colors flex items-center gap-2"
+              className="px-4 py-2 bg-red-50 text-red-600 border border-red-100 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-600 hover:text-white transition-colors flex items-center gap-2"
             >
               <Plus className="w-3 h-3" /> Novo Template
             </button>
@@ -173,11 +168,11 @@ export default function Diary({ onBack }: { onBack: () => void }) {
             value={noteContent}
             onChange={(e) => setNoteContent(e.target.value)}
             placeholder="Como foi seu dia? Escreva aqui..."
-            className="w-full h-80 bg-zinc-950 border border-white/5 rounded-3xl p-6 text-sm font-bold text-white placeholder:text-zinc-700 outline-none focus:ring-2 focus:ring-red-600 transition-all resize-none shadow-inner"
+            className="w-full h-80 bg-zinc-50 border border-zinc-200 rounded-3xl p-6 text-sm font-bold text-zinc-900 placeholder:text-zinc-300 outline-none focus:ring-2 focus:ring-red-600 transition-all resize-none shadow-inner"
           />
 
           <div className="flex gap-3">
-            <Button onClick={handleSaveNote} className="flex-1 py-5 rounded-2xl flex items-center justify-center gap-3">
+            <Button onClick={handleSaveNote} className="flex-1 py-5 rounded-2xl flex items-center justify-center gap-3 bg-zinc-900 text-white">
               <Save className="w-5 h-5" /> Salvar Nota
             </Button>
           </div>
@@ -192,22 +187,22 @@ export default function Diary({ onBack }: { onBack: () => void }) {
       >
         <div className="space-y-6">
           <div>
-            <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2 block">Nome do Template</label>
+            <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2 block">Nome do Template</label>
             <input
               autoFocus
               type="text"
               value={newTemplateName}
               onChange={(e) => setNewTemplateName(e.target.value)}
               placeholder="Ex: Gratidão, Exercícios..."
-              className="w-full bg-zinc-900 border border-white/5 rounded-2xl px-6 py-4 text-sm font-bold text-white outline-none focus:ring-2 focus:ring-red-600"
+              className="w-full bg-zinc-100 border border-zinc-200 rounded-2xl px-6 py-4 text-sm font-bold text-zinc-900 outline-none focus:ring-2 focus:ring-red-600"
             />
           </div>
-          <div className="p-4 bg-zinc-950 rounded-2xl border border-white/5 opacity-50 grayscale">
+          <div className="p-4 bg-zinc-50 rounded-2xl border border-zinc-100 opacity-50 grayscale">
             <p className="text-[10px] font-bold text-zinc-400 line-clamp-3 italic">
               {noteContent || 'O conteúdo atual será salvo como template...'}
             </p>
           </div>
-          <Button onClick={handleCreateTemplate} className="w-full py-5 rounded-2xl">Confirmar Template</Button>
+          <Button onClick={handleCreateTemplate} className="w-full py-5 rounded-2xl bg-zinc-900 text-white">Confirmar Template</Button>
         </div>
       </Modal>
     </div>

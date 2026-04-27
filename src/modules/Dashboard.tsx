@@ -57,16 +57,16 @@ export default function Dashboard() {
   }, [tasks, transactions]);
 
   return (
-    <div className="pb-32 px-6 pt-10 bg-[#080808] min-h-screen">
+    <div className="pb-32 px-6 pt-10 bg-[#f8f8f8] min-h-screen">
       <header className="mb-8">
-        <h1 className="text-xl font-black text-white uppercase tracking-tighter mb-1">Painel</h1>
+        <h1 className="text-xl font-black text-zinc-900 uppercase tracking-tighter mb-1">Painel</h1>
         <p className="text-[9px] font-black text-zinc-400 uppercase tracking-[0.2em]">Foco total nos seus objetivos</p>
       </header>
 
       {/* Main Cards */}
       <div className="grid grid-cols-2 gap-5 mb-8">
-        <Card className="col-span-2 bg-gradient-to-br from-red-600 to-red-800 text-white border-none p-6 rounded-xl shadow-2xl shadow-red-900/20 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 blur-[50px] -mr-12 -mt-12" />
+        <Card className="col-span-2 bg-zinc-900 text-white border-none p-6 rounded-xl shadow-2xl shadow-zinc-200 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-red-600/10 blur-[50px] -mr-12 -mt-12" />
           <div className="flex justify-between items-start mb-5">
             <div>
               <p className="text-[9px] font-black uppercase tracking-[0.2em] opacity-60 mb-1.5">Saldo do Mês</p>
@@ -76,35 +76,35 @@ export default function Dashboard() {
           </div>
           <div className="flex gap-5 text-[9px] font-black uppercase tracking-widest text-white/80">
             <div className="flex items-center gap-1.5">
-              <ArrowUpRight className="w-3.5 h-3.5 text-white/40" />
+              <ArrowUpRight className="w-3.5 h-3.5 text-emerald-400" />
               <span>Hoje: {formatCurrency(financeSummary.income)}</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <ArrowDownRight className="w-3.5 h-3.5 text-white/40" />
+              <ArrowDownRight className="w-3.5 h-3.5 text-red-400" />
               <span>Hoje: {formatCurrency(financeSummary.expense)}</span>
             </div>
           </div>
         </Card>
 
-        <Card className="flex flex-col justify-between p-5 bg-[#111111] border border-white/5 rounded-xl">
+        <Card className="flex flex-col justify-between p-5 bg-white border border-zinc-200 rounded-xl shadow-sm">
           <div className="flex justify-between items-center mb-3">
             <CheckSquare className="w-5 h-5 text-red-600 stroke-[2.5]" />
             <span className="text-[10px] font-black text-red-500">{Math.round(taskSummary.progress)}%</span>
           </div>
           <div>
             <p className="text-[8px] font-black text-zinc-400 uppercase tracking-widest mb-0.5">Tarefas</p>
-            <p className="text-sm font-black text-white">{taskSummary.pending} <span className="text-[9px] text-zinc-500 ml-0.5">pend.</span></p>
+            <p className="text-sm font-black text-zinc-900">{taskSummary.pending} <span className="text-[9px] text-zinc-400 ml-0.5">pend.</span></p>
           </div>
         </Card>
 
-        <Card className="flex flex-col justify-between p-5 bg-[#111111] border border-white/5 rounded-xl">
+        <Card className="flex flex-col justify-between p-5 bg-white border border-zinc-200 rounded-xl shadow-sm">
           <div className="flex justify-between items-center mb-3">
-            <Target className="w-5 h-5 text-white stroke-[2.5]" />
-            <span className="text-[10px] font-black text-white">{Math.round(goalSummary.totalProgress)}%</span>
+            <Target className="w-5 h-5 text-zinc-900 stroke-[2.5]" />
+            <span className="text-[10px] font-black text-zinc-900">{Math.round(goalSummary.totalProgress)}%</span>
           </div>
           <div>
             <p className="text-[8px] font-black text-zinc-400 uppercase tracking-widest mb-0.5">Metas</p>
-            <p className="text-sm font-black text-white">{goalSummary.activeGoals} <span className="text-[9px] text-zinc-500 ml-0.5">ativas</span></p>
+            <p className="text-sm font-black text-zinc-900">{goalSummary.activeGoals} <span className="text-[9px] text-zinc-400 ml-0.5">ativas</span></p>
           </div>
         </Card>
       </div>
@@ -117,33 +117,33 @@ export default function Dashboard() {
         </div>
 
         {pendingItems.tasks.length === 0 && pendingItems.bills.length === 0 ? (
-          <div className="text-center py-12 bg-[#111111] rounded-xl border border-white/5 border-dashed">
-            <p className="text-[9px] text-zinc-500 font-black uppercase tracking-widest">Tudo em dia! ✨</p>
+          <div className="text-center py-12 bg-white rounded-xl border border-zinc-200 border-dashed shadow-sm">
+            <p className="text-[9px] text-zinc-300 font-black uppercase tracking-widest">Tudo em dia! ✨</p>
           </div>
         ) : (
           <div className="space-y-3">
             {pendingItems.bills.map((bill) => (
-              <div key={bill.id} className="flex items-center gap-4 p-4 bg-[#111111] rounded-xl border border-white/5 shadow-xl">
-                <div className="w-10 h-10 rounded-xl bg-red-600/10 flex items-center justify-center text-red-600">
+              <div key={bill.id} className="flex items-center gap-4 p-4 bg-white rounded-xl border border-zinc-200 shadow-sm">
+                <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center text-red-600">
                   <Wallet className="w-5 h-5" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-xs font-black text-white mb-0.5 uppercase tracking-tight">{bill.description}</p>
+                  <p className="text-xs font-black text-zinc-900 mb-0.5 uppercase tracking-tight">{bill.description}</p>
                   <p className="text-[9px] text-red-500 font-black uppercase tracking-widest">A pagar: {formatCurrency(bill.value)}</p>
                 </div>
               </div>
             ))}
             {pendingItems.tasks.map((task) => (
-              <div key={task.id} className="flex items-center gap-4 p-4 bg-[#111111] rounded-xl border border-white/5 shadow-xl">
+              <div key={task.id} className="flex items-center gap-4 p-4 bg-white rounded-xl border border-zinc-200 shadow-sm">
                 <div className={cn(
                   "w-10 h-10 rounded-xl flex items-center justify-center",
-                  task.type === 'habit' ? "bg-white/5 text-white" : "bg-red-600/10 text-red-600"
+                  task.type === 'habit' ? "bg-zinc-100 text-zinc-900" : "bg-red-100 text-red-600"
                 )}>
                   {task.type === 'habit' ? <Target className="w-5 h-5" /> : <CheckSquare className="w-5 h-5" />}
                 </div>
                 <div className="flex-1">
-                  <p className="text-xs font-black text-white mb-0.5 uppercase tracking-tight">{task.description}</p>
-                  <p className="text-[9px] text-zinc-600 font-black uppercase tracking-widest">{task.type === 'habit' ? 'Hábito' : 'Tarefa'}</p>
+                  <p className="text-xs font-black text-zinc-900 mb-0.5 uppercase tracking-tight">{task.description}</p>
+                  <p className="text-[9px] text-zinc-400 font-black uppercase tracking-widest">{task.type === 'habit' ? 'Hábito' : 'Tarefa'}</p>
                 </div>
               </div>
             ))}

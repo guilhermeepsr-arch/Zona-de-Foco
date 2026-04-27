@@ -91,20 +91,20 @@ export default function Goals({ onBack }: { onBack: () => void }) {
   };
 
   return (
-    <div className="pb-32 bg-[#080808] min-h-screen">
+    <div className="pb-32 bg-[#f8f8f8] min-h-screen">
       <header className="px-6 pt-10 mb-6 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Target className="w-5 h-5 text-red-600" />
-          <h1 className="text-xl font-black text-white uppercase tracking-tighter">Metas</h1>
+          <h1 className="text-xl font-black text-zinc-900 uppercase tracking-tighter">Metas</h1>
         </div>
-        <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest">Hoje</span>
+        <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Hoje</span>
       </header>
 
       <div className="px-6 space-y-3 pb-24">
         {goals.length === 0 ? (
-          <div className="text-center py-16 bg-[#111111] rounded-2xl border border-white/5 shadow-2xl">
-            <p className="text-zinc-600 font-bold uppercase tracking-widest mb-1">Sem metas criadas</p>
-            <p className="text-[9px] text-zinc-700 font-semibold uppercase tracking-widest">Clique no + para começar</p>
+          <div className="text-center py-16 bg-white rounded-2xl border border-zinc-200 shadow-sm">
+            <p className="text-zinc-500 font-bold uppercase tracking-widest mb-1">Sem metas criadas</p>
+            <p className="text-[9px] text-zinc-400 font-semibold uppercase tracking-widest">Clique no + para começar</p>
           </div>
         ) : (
           goals.map(goal => (
@@ -122,7 +122,7 @@ export default function Goals({ onBack }: { onBack: () => void }) {
       {/* FAB - Botão Flutuante conforme imagem */}
       <button 
         onClick={() => setIsModalOpen(true)}
-        className="fixed bottom-8 right-6 w-16 h-16 bg-[#FF3B30] rounded-full flex items-center justify-center text-white shadow-2xl shadow-red-600/40 active:scale-90 transition-transform z-40 border-4 border-black/20"
+        className="fixed bottom-8 right-6 w-16 h-16 bg-[#FF3B30] rounded-full flex items-center justify-center text-white shadow-2xl shadow-red-600/30 active:scale-90 transition-transform z-40 border-4 border-white/20"
       >
         <Plus className="w-8 h-8 stroke-[3]" />
       </button>
@@ -138,7 +138,7 @@ export default function Goals({ onBack }: { onBack: () => void }) {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Ex: Flexões, Copos d'água"
-              className="w-full bg-zinc-900 border-none text-white rounded-xl px-5 py-3 text-sm font-bold shadow-inner focus:ring-2 focus:ring-red-600"
+              className="w-full bg-zinc-100 border-none text-zinc-900 rounded-xl px-5 py-3 text-sm font-bold shadow-inner focus:ring-2 focus:ring-red-600"
             />
           </div>
           <div>
@@ -149,7 +149,7 @@ export default function Goals({ onBack }: { onBack: () => void }) {
               value={unit}
               onChange={(e) => setUnit(e.target.value)}
               placeholder="Ex: reps, litros, km, páginas"
-              className="w-full bg-zinc-900 border-none text-white rounded-xl px-5 py-3 text-sm font-bold shadow-inner focus:ring-2 focus:ring-red-600"
+              className="w-full bg-zinc-100 border-none text-zinc-900 rounded-xl px-5 py-3 text-sm font-bold shadow-inner focus:ring-2 focus:ring-red-600"
             />
           </div>
           <div>
@@ -159,7 +159,7 @@ export default function Goals({ onBack }: { onBack: () => void }) {
               value={quickButtonsText}
               onChange={(e) => setQuickButtonsText(e.target.value)}
               placeholder="Ex: 5, 10, 25"
-              className="w-full bg-zinc-900 border-none text-white rounded-xl px-5 py-3 text-sm font-bold shadow-inner focus:ring-2 focus:ring-red-600"
+              className="w-full bg-zinc-100 border-none text-zinc-900 rounded-xl px-5 py-3 text-sm font-bold shadow-inner focus:ring-2 focus:ring-red-600"
             />
           </div>
           <Button type="submit" className="w-full py-4 text-xs font-bold uppercase tracking-widest">Criar Meta</Button>
@@ -201,7 +201,7 @@ export default function Goals({ onBack }: { onBack: () => void }) {
               required
               value={targetValue}
               onChange={(e) => setTargetValue(e.target.value)}
-              className="w-full bg-zinc-900 border-none text-white rounded-xl px-5 py-3 text-sm font-bold shadow-inner focus:ring-2 focus:ring-red-600"
+              className="w-full bg-zinc-100 border-none text-zinc-900 rounded-xl px-5 py-3 text-sm font-bold shadow-inner focus:ring-2 focus:ring-red-600"
               placeholder="Ex: 500"
             />
           </div>
@@ -212,7 +212,7 @@ export default function Goals({ onBack }: { onBack: () => void }) {
               required
               value={targetEndDate}
               onChange={(e) => setTargetEndDate(e.target.value)}
-              className="w-full bg-zinc-900 border-none text-white rounded-xl px-5 py-3 text-sm font-bold shadow-inner focus:ring-2 focus:ring-red-600"
+              className="w-full bg-zinc-100 border-none text-zinc-900 rounded-xl px-5 py-3 text-sm font-bold shadow-inner focus:ring-2 focus:ring-red-600"
             />
           </div>
           <Button type="submit" className="w-full py-4 text-xs font-bold uppercase tracking-widest">
@@ -274,45 +274,45 @@ function GoalCard({ goal, onAdd, onClick }: GoalCardProps) {
 
   return (
     <div 
-      className="p-5 bg-[#111111] border border-white/5 rounded-2xl shadow-xl transition-all active:scale-[0.99] group"
+      className="p-5 bg-white border border-zinc-200 rounded-2xl shadow-sm transition-all active:scale-[0.99] group"
       onClick={onClick}
     >
       <div className="flex justify-between items-start mb-0.5">
         <div className="flex items-center">
-          <h3 className="text-lg font-medium text-zinc-200 tracking-tight">{goal.name}</h3>
+          <h3 className="text-lg font-medium text-zinc-900 tracking-tight">{goal.name}</h3>
         </div>
         <div className="text-right">
           <div className="relative inline-block">
-            <p className="text-3xl font-black text-[#FF3B30] leading-none drop-shadow-[0_0_10px_rgba(255,59,48,0.3)]">{todayTotal}</p>
+            <p className="text-3xl font-black text-[#FF3B30] leading-none drop-shadow-[0_0_10px_rgba(255,59,48,0.2)]">{todayTotal}</p>
           </div>
-          <p className="text-[10px] text-zinc-600 font-bold uppercase tracking-widest mt-1">hoje</p>
+          <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest mt-1">hoje</p>
         </div>
       </div>
 
       <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-[0.1em] mb-2 -mt-1.5">{goal.unit}</p>
 
       <div className="mb-2">
-        <p className="text-[12px] font-medium text-zinc-500">Total: <span className="text-white font-black">{total}</span> <span className="lowercase">{goal.unit}</span></p>
+        <p className="text-[12px] font-medium text-zinc-500">Total: <span className="text-zinc-900 font-black">{total}</span> <span className="lowercase">{goal.unit}</span></p>
       </div>
 
       {stats && (
         <div className="mb-4">
           <div className="flex justify-between items-end mb-1.5">
-            <span className="text-[11px] font-medium text-zinc-600">Meta: {total}/{stats.targetValue}</span>
+            <span className="text-[11px] font-medium text-zinc-400">Meta: {total}/{stats.targetValue}</span>
             <span className={cn(
               "text-[9px] font-medium opacity-80",
-              stats.isAhead ? "text-emerald-500" : "text-amber-500"
+              stats.isAhead ? "text-emerald-600" : "text-amber-600"
             )}>
               {stats.isAhead ? "adiantado" : "em atraso"}
             </span>
           </div>
-          <div className="h-[3px] w-full bg-zinc-900 rounded-full overflow-hidden">
+          <div className="h-[3px] w-full bg-zinc-100 rounded-full overflow-hidden">
             <div 
               className="h-full bg-red-600 rounded-full transition-all duration-700 ease-out" 
               style={{ width: `${Math.min(100, stats.progressPerc)}%` }}
             />
           </div>
-          <p className="text-[10px] font-medium text-zinc-600 mt-2.5">
+          <p className="text-[10px] font-medium text-zinc-400 mt-2.5">
             {stats.daysRemaining}d restantes · {stats.requiredPerDay === 0 ? '-' : ''}{stats.requiredPerDay.toFixed(1)}/{goal.unit}/dia necessário
           </p>
         </div>
@@ -326,7 +326,7 @@ function GoalCard({ goal, onAdd, onClick }: GoalCardProps) {
               e.stopPropagation();
               onAdd(val);
             }}
-            className="flex-1 py-2 bg-[#1A1A1A] hover:bg-[#222222] text-white font-bold text-sm rounded-xl border border-white/5 transition-all active:scale-90"
+            className="flex-1 py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-900 font-bold text-sm rounded-xl border border-zinc-200 transition-all active:scale-90"
           >
             +{val}
           </button>
@@ -336,18 +336,18 @@ function GoalCard({ goal, onAdd, onClick }: GoalCardProps) {
             e.stopPropagation();
             onClick();
           }}
-          className="w-14 items-center justify-center bg-[#1A1A1A] hover:bg-[#222222] text-white rounded-xl border border-white/5 transition-all active:scale-90 hidden sm:flex"
+          className="w-14 items-center justify-center bg-zinc-100 hover:bg-zinc-200 text-zinc-900 rounded-xl border border-zinc-200 transition-all active:scale-90 hidden sm:flex"
         >
-          <Plus className="w-5 h-5 text-zinc-500" />
+          <Plus className="w-5 h-5 text-zinc-400" />
         </button>
         <button
           onClick={(e) => {
             e.stopPropagation();
             onClick();
           }}
-          className="flex-1 items-center justify-center bg-[#1A1A1A] hover:bg-[#222222] text-white rounded-xl border border-white/5 transition-all active:scale-90 flex sm:hidden"
+          className="flex-1 items-center justify-center bg-zinc-100 hover:bg-zinc-200 text-zinc-900 rounded-xl border border-zinc-200 transition-all active:scale-90 flex sm:hidden"
         >
-          <Plus className="w-5 h-5 text-zinc-500" />
+          <Plus className="w-5 h-5 text-zinc-400" />
         </button>
       </div>
     </div>
@@ -451,7 +451,7 @@ function GoalPane({ goal, onClose, onSetTarget }: { goal: Goal; onClose: () => v
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-2">
-          <button onClick={onClose} className="p-2 -ml-2 text-white">
+          <button onClick={onClose} className="p-2 -ml-2 text-zinc-900">
             <ArrowLeft className="w-5 h-5" />
           </button>
           {isEditing ? (
@@ -460,24 +460,24 @@ function GoalPane({ goal, onClose, onSetTarget }: { goal: Goal; onClose: () => v
                 autoFocus
                 value={editName}
                 onChange={(e) => setEditName(e.target.value)}
-                className="bg-zinc-900 border-none text-white font-bold uppercase text-xs px-2 py-1.5 rounded-lg w-full"
+                className="bg-zinc-100 border-none text-zinc-900 font-bold uppercase text-xs px-2 py-1.5 rounded-lg w-full"
               />
               <input 
                 value={editUnit}
                 onChange={(e) => setEditUnit(e.target.value)}
-                className="bg-zinc-900 border-none text-zinc-400 font-bold text-[10px] px-2 py-1.5 rounded-lg w-full"
+                className="bg-zinc-100 border-none text-zinc-500 font-bold text-[10px] px-2 py-1.5 rounded-lg w-full"
               />
               <button 
                 onClick={handleSaveEdit}
-                className="w-full bg-white text-black text-[10px] font-black uppercase py-2 rounded-lg"
+                className="w-full bg-zinc-900 text-white text-[10px] font-black uppercase py-2 rounded-lg"
               >
                 Salvar
               </button>
             </div>
           ) : (
             <div className="pt-1">
-              <h2 className="text-lg font-medium text-white tracking-tight leading-none uppercase">{goal.name}</h2>
-              <p className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest mt-0.5">{goal.unit}</p>
+              <h2 className="text-lg font-medium text-zinc-900 tracking-tight leading-none uppercase">{goal.name}</h2>
+              <p className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">{goal.unit}</p>
             </div>
           )}
         </div>
@@ -507,13 +507,13 @@ function GoalPane({ goal, onClose, onSetTarget }: { goal: Goal; onClose: () => v
 
       {/* Summary Cards */}
       <div className="grid grid-cols-2 gap-3">
-        <div className="bg-[#111111] border border-white/5 rounded-2xl p-5 py-8 flex flex-col items-center justify-center text-center shadow-xl">
-          <p className="text-4xl font-black text-[#FF3B30] leading-none mb-2 drop-shadow-[0_0_15px_rgba(255,59,48,0.2)]">{todayTotal}</p>
-          <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">HOJE</p>
+        <div className="bg-white border border-zinc-200 rounded-2xl p-5 py-8 flex flex-col items-center justify-center text-center shadow-sm">
+          <p className="text-4xl font-black text-[#FF3B30] leading-none mb-2 drop-shadow-[0_0_15px_rgba(255,59,48,0.1)]">{todayTotal}</p>
+          <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">HOJE</p>
         </div>
-        <div className="bg-[#111111] border border-white/5 rounded-2xl p-5 py-8 flex flex-col items-center justify-center text-center shadow-xl">
-          <p className="text-4xl font-black text-white leading-none mb-2">{total}</p>
-          <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">TOTAL</p>
+        <div className="bg-white border border-zinc-200 rounded-2xl p-5 py-8 flex flex-col items-center justify-center text-center shadow-sm">
+          <p className="text-4xl font-black text-zinc-900 leading-none mb-2">{total}</p>
+          <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">TOTAL</p>
         </div>
       </div>
 
@@ -524,14 +524,14 @@ function GoalPane({ goal, onClose, onSetTarget }: { goal: Goal; onClose: () => v
             <button
               key={val}
               onClick={() => addGoalEntry(goal.id, val)}
-              className="bg-[#1A1A1A] hover:bg-[#222222] text-white font-bold py-3 rounded-xl shadow-lg border border-white/5 transition-all active:scale-95"
+              className="bg-zinc-100 hover:bg-zinc-200 text-zinc-900 font-bold py-3 rounded-xl shadow-sm border border-zinc-200 transition-all active:scale-95"
             >
               +{val}
             </button>
           ))}
           <button
             onClick={() => setShowManualInput(!showManualInput)}
-            className="bg-[#1A1A1A] hover:bg-[#222222] text-zinc-400 font-bold py-3 rounded-xl shadow-lg border border-white/5 transition-all active:scale-95"
+            className="bg-zinc-100 hover:bg-zinc-200 text-zinc-400 font-bold py-3 rounded-xl shadow-sm border border-zinc-200 transition-all active:scale-95"
           >
             +?
           </button>
@@ -539,14 +539,14 @@ function GoalPane({ goal, onClose, onSetTarget }: { goal: Goal; onClose: () => v
 
         {showManualInput && (
           <form onSubmit={handleAddValue} className="animate-in fade-in slide-in-from-top-2 duration-300">
-            <div className="flex gap-2 bg-[#1A1A1A] p-2 rounded-xl border border-white/5 shadow-inner">
+            <div className="flex gap-2 bg-zinc-100 p-2 rounded-xl border border-zinc-200 shadow-inner">
               <input 
                 autoFocus
                 type="number"
                 value={addValue}
                 onChange={(e) => setAddValue(e.target.value)}
                 placeholder={`Mais ${goal.unit}...`}
-                className="flex-1 bg-transparent border-none text-white px-3 py-2 text-sm font-bold focus:ring-0"
+                className="flex-1 bg-transparent border-none text-zinc-900 px-3 py-2 text-sm font-bold focus:ring-0"
               />
               <button 
                 type="submit"
@@ -567,25 +567,25 @@ function GoalPane({ goal, onClose, onSetTarget }: { goal: Goal; onClose: () => v
       </div>
 
       {/* Meta Ativa Section */}
-      <div className="bg-[#111111] border border-white/10 rounded-2xl p-6 shadow-2xl relative overflow-hidden">
+      <div className="bg-white border border-zinc-200 rounded-2xl p-6 shadow-sm relative overflow-hidden">
         <div className="flex items-center justify-between mb-5">
            <div className="flex items-center gap-2.5">
              <div className="w-5 h-5 rounded-full border-2 border-red-600 flex items-center justify-center">
                <div className="w-1.5 h-1.5 bg-red-600 rounded-full" />
              </div>
-             <span className="text-[13px] font-bold text-white">Meta Ativa</span>
+             <span className="text-[13px] font-bold text-zinc-900">Meta Ativa</span>
            </div>
            {stats && (
               <span className={cn(
                 "text-[9px] font-medium opacity-80",
-                stats.isAhead ? "text-emerald-500" : "text-amber-500"
+                stats.isAhead ? "text-emerald-600" : "text-amber-600"
               )}>
                 {stats.isAhead ? "adiantado" : "em atraso"}
               </span>
            )}
         </div>
 
-        <div className="h-[3px] w-full bg-zinc-950 rounded-full overflow-hidden mb-6">
+        <div className="h-[3px] w-full bg-zinc-100 rounded-full overflow-hidden mb-6">
           <motion.div 
              initial={{ width: 0 }}
              animate={{ width: `${stats ? Math.min(100, stats.progressPerc) : 0}%` }}
@@ -595,27 +595,27 @@ function GoalPane({ goal, onClose, onSetTarget }: { goal: Goal; onClose: () => v
 
         <div className="grid grid-cols-2 gap-x-6 gap-y-8">
            <div>
-             <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest mb-1.5">Progresso</p>
-             <p className="text-[14px] font-bold text-white tracking-tight">
+             <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5">Progresso</p>
+             <p className="text-[14px] font-bold text-zinc-900 tracking-tight">
                {total} / {stats?.targetValue || 0} ({stats?.progressPerc || 0}%)
              </p>
            </div>
            <div>
-             <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest mb-1.5">Dias restantes</p>
-             <p className="text-[14px] font-bold text-white tracking-tight">{stats?.daysRemaining || 0}</p>
+             <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5">Dias restantes</p>
+             <p className="text-[14px] font-bold text-zinc-900 tracking-tight">{stats?.daysRemaining || 0}</p>
            </div>
            <div>
-             <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest mb-1.5">Ritmo necessário</p>
-             <p className="text-[14px] font-bold text-white tracking-tight">{stats?.requiredPerDay.toFixed(1) || 0} {goal.unit}/dia</p>
+             <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5">Ritmo necessário</p>
+             <p className="text-[14px] font-bold text-zinc-900 tracking-tight">{stats?.requiredPerDay.toFixed(1) || 0} {goal.unit}/dia</p>
            </div>
            <div>
-             <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest mb-1.5">Ritmo atual</p>
-             <p className="text-[14px] font-bold text-white tracking-tight">{stats?.currentAverage.toFixed(1) || 0} {goal.unit}/dia</p>
+             <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5">Ritmo atual</p>
+             <p className="text-[14px] font-bold text-zinc-900 tracking-tight">{stats?.currentAverage.toFixed(1) || 0} {goal.unit}/dia</p>
            </div>
         </div>
 
         {stats?.isAhead && (
-          <div className="mt-8 pt-6 border-t border-white/5">
+          <div className="mt-8 pt-6 border-t border-zinc-100">
             <p className="text-sm font-bold text-red-500 flex items-center gap-2">
               +{Math.floor(stats.diff)} {goal.unit} acima da meta! 🔥
             </p>
@@ -626,15 +626,15 @@ function GoalPane({ goal, onClose, onSetTarget }: { goal: Goal; onClose: () => v
       {/* Target Action */}
       <button 
         onClick={onSetTarget}
-        className="w-full py-4 bg-transparent border border-white/5 rounded-xl flex items-center justify-center gap-3 text-zinc-500 hover:text-white hover:border-white/10 transition-all active:scale-[0.98]"
+        className="w-full py-4 bg-transparent border border-zinc-200 rounded-xl flex items-center justify-center gap-3 text-zinc-400 hover:text-zinc-600 hover:border-zinc-300 transition-all active:scale-[0.98]"
       >
         <span className="text-xl">🎯</span>
         <span className="text-sm font-bold uppercase tracking-tight">Nova Meta (encerra atual)</span>
       </button>
 
       {/* Chart Section */}
-      <div className="bg-[#111111] border border-white/5 rounded-2xl p-6 shadow-xl">
-        <h3 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-8">ÚLTIMOS 7 DIAS</h3>
+      <div className="bg-white border border-zinc-200 rounded-2xl p-6 shadow-sm">
+        <h3 className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-8">ÚLTIMOS 7 DIAS</h3>
         <div className="h-48 w-full mt-4">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData}>
@@ -645,7 +645,7 @@ function GoalPane({ goal, onClose, onSetTarget }: { goal: Goal; onClose: () => v
                 {chartData.map((entry, index) => (
                   <Cell 
                     key={`cell-${index}`} 
-                    fill={entry.isToday ? '#00FF00' : '#1A1A1A'} 
+                    fill={entry.isToday ? '#10B981' : '#F4F4F5'} 
                   />
                 ))}
               </Bar>
@@ -653,7 +653,7 @@ function GoalPane({ goal, onClose, onSetTarget }: { goal: Goal; onClose: () => v
                 dataKey="name" 
                 axisLine={false} 
                 tickLine={false} 
-                tick={{ fill: '#525252', fontSize: 10, fontWeight: 700 }}
+                tick={{ fill: '#A1A1AA', fontSize: 10, fontWeight: 700 }}
                 dy={12}
               />
               <Tooltip 
@@ -661,8 +661,8 @@ function GoalPane({ goal, onClose, onSetTarget }: { goal: Goal; onClose: () => v
                 content={({ active, payload }) => {
                   if (active && payload && payload.length) {
                     return (
-                      <div className="bg-[#1A1A1A] border border-white/10 p-2 rounded-lg shadow-2xl">
-                        <p className="text-[11px] font-bold text-white">{payload[0].value} {goal.unit}</p>
+                      <div className="bg-zinc-900 text-white p-2 rounded-lg shadow-2xl">
+                        <p className="text-[11px] font-bold">{payload[0].value} {goal.unit}</p>
                       </div>
                     );
                   }
@@ -676,14 +676,14 @@ function GoalPane({ goal, onClose, onSetTarget }: { goal: Goal; onClose: () => v
 
       {/* Records Section */}
       <div className="space-y-4">
-        <h3 className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest ml-1">REGISTROS DE HOJE</h3>
+        <h3 className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest ml-1">REGISTROS DE HOJE</h3>
         <div className="space-y-0.5">
           {goal.entries.filter(e => isToday(parseISO(e.date))).length === 0 ? (
-            <p className="text-[11px] text-zinc-700 font-bold uppercase tracking-widest py-8 text-center italic border border-dashed border-white/5 rounded-2xl">Sem registros hoje</p>
+            <p className="text-[11px] text-zinc-400 font-bold uppercase tracking-widest py-8 text-center italic border border-dashed border-zinc-200 rounded-2xl">Sem registros hoje</p>
           ) : (
             [...goal.entries].filter(e => isToday(parseISO(e.date))).reverse().map((entry) => (
-              <div key={entry.id} className="flex items-center justify-between py-4 px-2 border-b border-white/5 last:border-0">
-                <p className="text-[13px] font-mono text-zinc-500">{format(parseISO(entry.date), "HH:mm")}</p>
+              <div key={entry.id} className="flex items-center justify-between py-4 px-2 border-b border-zinc-100 last:border-0">
+                <p className="text-[13px] font-mono text-zinc-400">{format(parseISO(entry.date), "HH:mm")}</p>
                 <p className="text-lg font-bold text-red-500">+{entry.value}</p>
               </div>
             ))

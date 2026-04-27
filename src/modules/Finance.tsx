@@ -154,31 +154,25 @@ export default function Finance({ onBack }: { onBack: () => void }) {
   };
 
   return (
-    <div className="pb-32 bg-[#080808] min-h-screen">
+    <div className="pb-32 bg-[#f8f8f8] min-h-screen">
       {/* Header */}
       <header className="px-6 pt-10 mb-8">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
-            <button 
-              onClick={onBack}
-              className="w-10 h-10 bg-zinc-950 rounded-xl flex items-center justify-center text-zinc-500 hover:text-white transition-all shadow-xl"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-            <div className="w-9 h-9 bg-red-600 rounded-xl flex items-center justify-center shadow-lg shadow-red-900/20">
+            <div className="w-9 h-9 bg-red-600 rounded-xl flex items-center justify-center shadow-lg shadow-red-900/10">
               <LayoutGrid className="w-5 h-5 text-white" />
             </div>
-            <h1 className="text-xl font-black text-white uppercase tracking-tighter">Finanças</h1>
+            <h1 className="text-xl font-black text-zinc-900 uppercase tracking-tighter">Finanças</h1>
           </div>
           
-          <div className="flex bg-[#111111] p-1 rounded-xl shadow-xl border border-white/5">
+          <div className="flex bg-white p-1 rounded-xl shadow-sm border border-zinc-200">
             {(['all', 'pending', 'paid'] as const).map((f) => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
                 className={cn(
                   'px-2.5 py-1.5 rounded-lg text-[8px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5',
-                  filter === f ? 'bg-white text-black shadow-md' : 'text-zinc-400 hover:text-zinc-200'
+                  filter === f ? 'bg-zinc-900 text-white shadow-md' : 'text-zinc-400 hover:text-zinc-600'
                 )}
               >
                 {f === 'pending' && <div className="w-1 h-1 rounded-full bg-red-500" />}
@@ -190,54 +184,54 @@ export default function Finance({ onBack }: { onBack: () => void }) {
         </div>
 
         {/* Summary Card */}
-        <Card className="p-5 border-none bg-gradient-to-br from-[#111111] to-[#0d0d0d] shadow-2xl relative overflow-hidden rounded-xl">
+        <Card className="p-5 border border-zinc-200 bg-white shadow-sm relative overflow-hidden rounded-xl">
           <div className="absolute top-0 right-0 w-24 h-24 bg-red-600/5 blur-[60px] -mr-12 -mt-12" />
           
           <div className="flex items-center justify-between mb-8">
-            <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="p-1.5 bg-zinc-900 hover:bg-zinc-800 rounded-lg transition-colors border border-white/5">
-              <ChevronLeft className="w-4 h-4 text-zinc-300" />
+            <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="p-1.5 bg-zinc-100 hover:bg-zinc-200 rounded-lg transition-colors border border-zinc-200">
+              <ChevronLeft className="w-4 h-4 text-zinc-500" />
             </button>
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 text-white font-black uppercase tracking-widest text-xs">
+              <div className="flex items-center gap-2 text-zinc-900 font-black uppercase tracking-widest text-xs">
                 <Calendar className="w-3.5 h-3.5 text-red-500" />
                 <span>{formatMonthYear(currentMonth)}</span>
               </div>
               <button 
                 onClick={handleExport}
-                className="p-1.5 text-zinc-500 hover:text-red-500 transition-colors"
+                className="p-1.5 text-zinc-300 hover:text-red-500 transition-colors"
                 title="Exportar Extrato"
               >
                 <Share className="w-3.5 h-3.5" />
               </button>
             </div>
-            <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="p-1.5 bg-zinc-900 hover:bg-zinc-800 rounded-lg transition-colors border border-white/5">
-              <ChevronRight className="w-4 h-4 text-zinc-300" />
+            <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="p-1.5 bg-zinc-100 hover:bg-zinc-200 rounded-lg transition-colors border border-zinc-200">
+              <ChevronRight className="w-4 h-4 text-zinc-500" />
             </button>
           </div>
 
           {/* Unified Row Summary */}
           <div className="space-y-4">
             {/* Atual Section */}
-            <div className="bg-zinc-900/60 rounded-xl border border-white/5 overflow-hidden">
-              <div className="px-3 py-1.5 bg-zinc-800/20 border-b border-white/5">
-                <p className="text-[6px] font-black text-zinc-500 uppercase tracking-[0.2em]">Fluxo Atual (Efivado)</p>
+            <div className="bg-zinc-50 rounded-xl border border-zinc-100 overflow-hidden">
+              <div className="px-3 py-1.5 bg-zinc-100/50 border-b border-zinc-100">
+                <p className="text-[6px] font-black text-zinc-400 uppercase tracking-[0.2em]">Fluxo Atual (Efivado)</p>
               </div>
-              <div className="grid grid-cols-3 divide-x divide-white/5">
+              <div className="grid grid-cols-3 divide-x divide-zinc-100">
                 <div className="p-3 text-center">
-                  <p className="text-[7px] font-black text-zinc-500 uppercase tracking-widest mb-1">Saldo</p>
-                  <p className={cn("text-[11px] font-black", summary.actualBalance >= 0 ? "text-white" : "text-red-500")}>
+                  <p className="text-[7px] font-black text-zinc-400 uppercase tracking-widest mb-1">Saldo</p>
+                  <p className={cn("text-[11px] font-black", summary.actualBalance >= 0 ? "text-zinc-900" : "text-red-600")}>
                     {formatCurrency(summary.actualBalance)}
                   </p>
                 </div>
                 <div className="p-3 text-center">
-                  <p className="text-[7px] font-black text-zinc-500 uppercase tracking-widest mb-1">Entradas</p>
-                  <p className="text-[11px] font-black text-green-500">
+                  <p className="text-[7px] font-black text-zinc-400 uppercase tracking-widest mb-1">Entradas</p>
+                  <p className="text-[11px] font-black text-green-600">
                     {formatCurrency(summary.actualIncome)}
                   </p>
                 </div>
                 <div className="p-3 text-center">
-                  <p className="text-[7px] font-black text-zinc-500 uppercase tracking-widest mb-1">Saídas</p>
-                  <p className="text-[11px] font-black text-red-500">
+                  <p className="text-[7px] font-black text-zinc-400 uppercase tracking-widest mb-1">Saídas</p>
+                  <p className="text-[11px] font-black text-red-600">
                     {formatCurrency(summary.actualExpense)}
                   </p>
                 </div>
@@ -245,26 +239,26 @@ export default function Finance({ onBack }: { onBack: () => void }) {
             </div>
 
             {/* Previsto Section (More Discrete) */}
-            <div className="bg-zinc-900/30 rounded-xl border border-white/5 overflow-hidden opacity-60">
-              <div className="px-3 py-1 bg-zinc-900/40 border-b border-white/5">
-                <p className="text-[6px] font-black text-zinc-500 uppercase tracking-[0.2em]">Previsão Mensal (Total)</p>
+            <div className="bg-zinc-100/30 rounded-xl border border-zinc-100 overflow-hidden opacity-60">
+              <div className="px-3 py-1 bg-zinc-100/40 border-b border-zinc-100">
+                <p className="text-[6px] font-black text-zinc-400 uppercase tracking-[0.2em]">Previsão Mensal (Total)</p>
               </div>
-              <div className="grid grid-cols-3 divide-x divide-white/5">
+              <div className="grid grid-cols-3 divide-x divide-zinc-100">
                 <div className="p-2.5 text-center">
-                  <p className="text-[6px] font-black text-zinc-600 uppercase tracking-widest mb-0.5">Saldo</p>
-                  <p className={cn("text-[9px] font-bold", summary.predictedBalance >= 0 ? "text-zinc-300" : "text-red-900")}>
+                  <p className="text-[6px] font-black text-zinc-500 uppercase tracking-widest mb-0.5">Saldo</p>
+                  <p className={cn("text-[9px] font-bold", summary.predictedBalance >= 0 ? "text-zinc-600" : "text-red-950")}>
                     {formatCurrency(summary.predictedBalance)}
                   </p>
                 </div>
                 <div className="p-2.5 text-center">
-                  <p className="text-[6px] font-black text-zinc-600 uppercase tracking-widest mb-0.5">Entradas</p>
-                  <p className="text-[9px] font-bold text-green-900">
+                  <p className="text-[6px] font-black text-zinc-500 uppercase tracking-widest mb-0.5">Entradas</p>
+                  <p className="text-[9px] font-bold text-green-950">
                     {formatCurrency(summary.predictedIncome)}
                   </p>
                 </div>
                 <div className="p-2.5 text-center">
-                  <p className="text-[6px] font-black text-zinc-600 uppercase tracking-widest mb-0.5">Saídas</p>
-                  <p className="text-[9px] font-bold text-red-900">
+                  <p className="text-[6px] font-black text-zinc-500 uppercase tracking-widest mb-0.5">Saídas</p>
+                  <p className="text-[9px] font-bold text-red-950">
                     {formatCurrency(summary.predictedExpense)}
                   </p>
                 </div>
@@ -277,30 +271,30 @@ export default function Finance({ onBack }: { onBack: () => void }) {
       {/* Timeline */}
       <div className="px-6 space-y-8">
         {groupedTransactions.length === 0 ? (
-          <div className="text-center py-12 bg-[#111111] rounded-xl border border-white/5 shadow-2xl">
+          <div className="text-center py-12 bg-white rounded-xl border border-zinc-200 shadow-sm">
             <p className="text-zinc-400 font-black uppercase tracking-[0.2em] mb-1 leading-loose">Nada aqui.</p>
-            <p className="text-[9px] text-zinc-500 font-black uppercase tracking-widest">Seus lançamentos aparecerão aqui</p>
+            <p className="text-[9px] text-zinc-300 font-black uppercase tracking-widest">Seus lançamentos aparecerão aqui</p>
           </div>
         ) : (
           groupedTransactions.map(({ dateStr, items }) => (
             <div key={dateStr}>
-              <h3 className="text-[8px] font-black text-zinc-400 mb-3 ml-2 uppercase tracking-[0.3em]">{dateStr}</h3>
+              <h3 className="text-[8px] font-black text-zinc-300 mb-3 ml-2 uppercase tracking-[0.3em]">{dateStr}</h3>
               <div className="space-y-2.5">
                 {items.map((t) => (
                   <div
                     key={t.id}
                     className={cn(
-                      'flex items-center gap-4 p-3.5 bg-[#111111] rounded-xl shadow-xl border border-white/5 transition-all active:scale-[0.98]',
+                      'flex items-center gap-4 p-3.5 bg-white rounded-xl shadow-sm border border-zinc-200 transition-all active:scale-[0.98]',
                       t.completed ? 'opacity-40 grayscale' : ''
                     )}
                   >
                     <button
                       onClick={() => toggleTransaction(t.id)}
                       className={cn(
-                        'w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all shadow-lg',
+                        'w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all',
                         t.completed 
-                          ? 'bg-red-600 border-red-600 text-white shadow-red-900/40' 
-                          : 'bg-zinc-900 border-zinc-700'
+                          ? 'bg-red-600 border-red-600 text-white' 
+                          : 'bg-zinc-100 border-zinc-200'
                       )}
                     >
                       {t.completed && <Check className="w-4 h-4 stroke-[4]" />}
@@ -308,14 +302,14 @@ export default function Finance({ onBack }: { onBack: () => void }) {
                     
                     <div className="flex-1 min-w-0 flex items-center justify-between gap-4">
                       <p className={cn(
-                        'text-xs font-bold text-white truncate tracking-tight',
-                        t.completed && 'line-through text-zinc-500 opacity-60'
+                        'text-xs font-bold text-zinc-900 truncate tracking-tight',
+                        t.completed && 'line-through text-zinc-400 opacity-60'
                       )}>
                         {t.description}
                       </p>
                       <p className={cn(
                         'text-xs font-black shrink-0',
-                        t.type === 'income' ? 'text-green-500' : 'text-red-500'
+                        t.type === 'income' ? 'text-green-600' : 'text-red-600'
                       )}>
                         {t.type === 'income' ? '+' : '-'} {formatCurrency(t.value)}
                       </p>
@@ -350,7 +344,7 @@ export default function Finance({ onBack }: { onBack: () => void }) {
             setModalType('income');
             setIsModalOpen(true);
           }}
-          className="w-11 h-11 rounded-full bg-white text-black shadow-2xl shadow-white/5 flex items-center justify-center active:scale-95 transition-transform"
+          className="w-11 h-11 rounded-full bg-zinc-900 text-white shadow-xl shadow-zinc-200 flex items-center justify-center active:scale-95 transition-transform"
         >
           <Plus className="w-6 h-6 stroke-[2.5]" />
         </button>
@@ -359,7 +353,7 @@ export default function Finance({ onBack }: { onBack: () => void }) {
             setModalType('expense');
             setIsModalOpen(true);
           }}
-          className="w-11 h-11 rounded-full bg-red-600 text-white shadow-2xl shadow-red-500/20 flex items-center justify-center active:scale-95 transition-transform"
+          className="w-11 h-11 rounded-full bg-red-600 text-white shadow-xl shadow-red-500/20 flex items-center justify-center active:scale-95 transition-transform"
         >
           <Minus className="w-6 h-6 stroke-[2.5]" />
         </button>
@@ -389,7 +383,7 @@ export default function Finance({ onBack }: { onBack: () => void }) {
                 required
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full px-6 py-4 bg-zinc-900 border-none rounded-[1.5rem] focus:ring-2 focus:ring-red-500 text-base font-bold text-white placeholder:text-zinc-600 shadow-inner"
+                className="w-full px-6 py-4 bg-zinc-100 border-none rounded-[1.5rem] focus:ring-2 focus:ring-red-500 text-base font-bold text-zinc-900 placeholder:text-zinc-300 shadow-inner"
                 placeholder="Ex: Aluguel, Salário..."
               />
             </div>
@@ -402,7 +396,7 @@ export default function Finance({ onBack }: { onBack: () => void }) {
               step="0.01"
               value={value}
               onChange={(e) => setValue(e.target.value)}
-              className="w-full px-6 py-4 bg-zinc-900 border-none rounded-[1.5rem] focus:ring-2 focus:ring-red-500 text-base font-bold text-white placeholder:text-zinc-600 shadow-inner"
+              className="w-full px-6 py-4 bg-zinc-100 border-none rounded-[1.5rem] focus:ring-2 focus:ring-red-500 text-base font-bold text-zinc-900 placeholder:text-zinc-300 shadow-inner"
               placeholder="0,00"
             />
           </div>
@@ -413,7 +407,7 @@ export default function Finance({ onBack }: { onBack: () => void }) {
               required
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="w-full px-6 py-4 bg-zinc-900 border-none rounded-[1.5rem] focus:ring-2 focus:ring-red-500 text-base font-bold text-white shadow-inner"
+              className="w-full px-6 py-4 bg-zinc-100 border-none rounded-[1.5rem] focus:ring-2 focus:ring-red-500 text-base font-bold text-zinc-900 shadow-inner"
             />
           </div>
           {modalType !== 'investment' && (
@@ -424,7 +418,7 @@ export default function Finance({ onBack }: { onBack: () => void }) {
                   id="recurring"
                   checked={recurring}
                   onChange={(e) => setRecurring(e.target.checked)}
-                  className="w-5 h-5 rounded-lg border-white/5 bg-zinc-900 text-red-600 focus:ring-red-500 ring-offset-black"
+                  className="w-5 h-5 rounded-lg border-zinc-200 bg-zinc-100 text-red-600 focus:ring-red-500 ring-offset-white"
                 />
                 <label htmlFor="recurring" className="text-sm font-black text-zinc-400 uppercase tracking-widest">Repetir mensalmente</label>
               </div>
@@ -437,7 +431,7 @@ export default function Finance({ onBack }: { onBack: () => void }) {
                     onChange={(e) => setMonths(e.target.value)}
                     min="2"
                     max="60"
-                    className="w-full px-6 py-4 bg-zinc-900 border-none rounded-[1.5rem] focus:ring-2 focus:ring-red-500 text-base font-bold text-white shadow-inner"
+                    className="w-full px-6 py-4 bg-zinc-100 border-none rounded-[1.5rem] focus:ring-2 focus:ring-red-500 text-base font-bold text-zinc-900 shadow-inner"
                   />
                 </div>
               )}

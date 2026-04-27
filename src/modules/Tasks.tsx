@@ -30,17 +30,17 @@ function TaskItem({
       dragListener={false}
       dragControls={controls}
       className={cn(
-        "group flex items-center gap-2.5 p-2.5 !bg-[#111111] border border-white/5 rounded-xl shadow-xl transition-all mb-1.5",
+        "group flex items-center gap-2.5 p-2.5 !bg-white border border-zinc-200 rounded-xl shadow-sm transition-all mb-1.5",
         task.completed && "opacity-50 grayscale"
       )}
     >
       <button
         onClick={() => toggleTask(task.id)}
         className={cn(
-          "w-4.5 h-4.5 rounded-md border-2 flex items-center justify-center transition-all flex-shrink-0 shadow-lg",
+          "w-4.5 h-4.5 rounded-md border-2 flex items-center justify-center transition-all flex-shrink-0",
           task.completed 
-            ? "bg-red-600 border-red-600 text-white shadow-red-900/40" 
-            : "bg-zinc-900 border-zinc-700"
+            ? "bg-red-600 border-red-600 text-white" 
+            : "bg-zinc-100 border-zinc-200"
         )}
       >
         {task.completed && <Check className="w-3 h-3 stroke-[4]" />}
@@ -57,7 +57,7 @@ function TaskItem({
               if (e.key === 'Enter') handleSaveEdit(task.id);
               if (e.key === 'Escape') setEditingId(null);
             }}
-            className="w-full bg-transparent border-b border-red-600 outline-none py-0.5 text-xs font-bold text-white"
+            className="w-full bg-transparent border-b border-red-600 outline-none py-0.5 text-xs font-bold text-zinc-900"
           />
         ) : (
           <p 
@@ -67,7 +67,7 @@ function TaskItem({
             }}
             className={cn(
               "font-bold text-xs transition-all truncate cursor-text tracking-tight",
-              task.completed ? "text-zinc-600 line-through" : "text-white"
+              task.completed ? "text-zinc-400 line-through" : "text-zinc-900"
             )}
           >
             {task.description || 'O que vamos fazer hoje?'}
@@ -194,37 +194,31 @@ export default function Tasks({ onBack }: { onBack: () => void }) {
   };
 
   return (
-    <div className="pb-32 bg-[#080808] min-h-screen">
+    <div className="pb-32 bg-[#f8f8f8] min-h-screen">
       {/* Header */}
       <header className="px-6 pt-10 mb-8">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
-            <button 
-              onClick={onBack}
-              className="w-10 h-10 bg-zinc-950 rounded-xl flex items-center justify-center text-zinc-500 hover:text-white transition-all shadow-xl"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-            <div className="w-9 h-9 bg-red-600 rounded-xl flex items-center justify-center shadow-lg shadow-red-900/40">
+            <div className="w-9 h-9 bg-red-600 rounded-xl flex items-center justify-center shadow-lg shadow-red-900/10">
               <Rocket className="w-5 h-5 text-white stroke-[2.5]" />
             </div>
-            <h1 className="text-xl font-black text-white uppercase tracking-tighter">Tarefas</h1>
+            <h1 className="text-xl font-black text-zinc-900 uppercase tracking-tighter">Tarefas</h1>
           </div>
           
           <div className="flex items-center gap-1.5">
             <button
               onClick={() => setIsFrequentOpen(true)}
-              className="relative p-2 bg-[#111111] rounded-xl border border-white/5 hover:bg-zinc-900 transition-all active:scale-95 shadow-xl"
+              className="relative p-2 bg-white rounded-xl border border-zinc-200 hover:bg-zinc-50 transition-all active:scale-95 shadow-sm"
             >
-              <Repeat className="w-5 h-5 text-zinc-300" />
+              <Repeat className="w-5 h-5 text-zinc-400" />
             </button>
             <button
               onClick={() => setIsInboxOpen(true)}
-              className="relative p-2 bg-[#111111] rounded-xl border border-white/5 hover:bg-zinc-900 transition-all active:scale-95 shadow-xl"
+              className="relative p-2 bg-white rounded-xl border border-zinc-200 hover:bg-zinc-50 transition-all active:scale-95 shadow-sm"
             >
-              <Inbox className="w-5 h-5 text-zinc-300" />
+              <Inbox className="w-5 h-5 text-zinc-400" />
               {inboxTasks.length > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-600 text-white text-[8px] font-black rounded-full flex items-center justify-center border-2 border-[#080808] shadow-lg shadow-red-900/20">
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-600 text-white text-[8px] font-black rounded-full flex items-center justify-center border-2 border-white shadow-lg shadow-red-900/10">
                   {inboxTasks.length}
                 </span>
               )}
@@ -233,19 +227,19 @@ export default function Tasks({ onBack }: { onBack: () => void }) {
         </div>
 
         {/* Date Selector */}
-        <div className="flex items-center justify-between bg-[#111111] p-1.5 rounded-xl border border-white/5 mb-8 shadow-2xl">
+        <div className="flex items-center justify-between bg-white p-1.5 rounded-xl border border-zinc-200 mb-8 shadow-sm">
           <button 
             onClick={() => setCurrentDate(subDays(currentDate, 1))} 
-            className="p-2 hover:bg-zinc-900 rounded-lg transition-all text-zinc-500 hover:text-white"
+            className="p-2 hover:bg-zinc-50 rounded-lg transition-all text-zinc-400 hover:text-zinc-900"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
-          <span className="text-[10px] font-black uppercase tracking-[0.25em] text-white">
+          <span className="text-[10px] font-black uppercase tracking-[0.25em] text-zinc-900">
             {dateLabel}
           </span>
           <button 
             onClick={() => setCurrentDate(addDays(currentDate, 1))} 
-            className="p-2 hover:bg-zinc-900 rounded-lg transition-all text-zinc-500 hover:text-white"
+            className="p-2 hover:bg-zinc-50 rounded-lg transition-all text-zinc-400 hover:text-zinc-900"
           >
             <ChevronRight className="w-5 h-5" />
           </button>
@@ -254,10 +248,10 @@ export default function Tasks({ onBack }: { onBack: () => void }) {
         {/* Progress Bar */}
         <div className="px-1 mb-8">
           <div className="flex justify-between items-end mb-1.5 px-0.5">
-            <span className="text-[9px] font-mono text-zinc-600 tracking-tight">
+            <span className="text-[9px] font-mono text-zinc-400 tracking-tight">
               {filteredTasks.filter(t => t.completed).length}/{filteredTasks.length} tarefas concluídas
             </span>
-            <span className="text-[9px] font-mono text-zinc-600">{Math.round(progress)}%</span>
+            <span className="text-[9px] font-mono text-zinc-400">{Math.round(progress)}%</span>
           </div>
           <ProgressBar progress={progress} color="red" />
         </div>
@@ -273,9 +267,9 @@ export default function Tasks({ onBack }: { onBack: () => void }) {
         className="px-6 space-y-1.5"
       >
         {filteredTasks.length === 0 ? (
-          <div className="text-center py-12 bg-[#111111] rounded-xl border border-white/5 shadow-2xl">
-            <p className="text-zinc-500 font-black uppercase tracking-[0.2em] mb-1 leading-loose">Vazio.</p>
-            <p className="text-[9px] text-zinc-700 font-black uppercase tracking-widest">Nada planejado para este dia</p>
+          <div className="text-center py-12 bg-white rounded-xl border border-zinc-200 shadow-sm">
+            <p className="text-zinc-400 font-black uppercase tracking-[0.2em] mb-1 leading-loose">Vazio.</p>
+            <p className="text-[9px] text-zinc-300 font-black uppercase tracking-widest">Nada planejado para este dia</p>
           </div>
         ) : (
           filteredTasks.map((task) => (
@@ -297,7 +291,7 @@ export default function Tasks({ onBack }: { onBack: () => void }) {
       {/* FAB */}
       <button
         onClick={handleAddNew}
-        className="fixed bottom-24 right-6 w-14 h-14 rounded-full bg-red-600 text-white shadow-xl shadow-red-200 flex items-center justify-center active:scale-95 transition-transform z-40"
+        className="fixed bottom-24 right-6 w-14 h-14 rounded-full bg-red-600 text-white shadow-xl shadow-red-100 flex items-center justify-center active:scale-95 transition-transform z-40"
       >
         <Plus className="w-7 h-7" />
       </button>
@@ -311,25 +305,25 @@ export default function Tasks({ onBack }: { onBack: () => void }) {
         <div className="space-y-6">
           <div className="max-h-[50vh] overflow-y-auto pr-2 space-y-2">
             {inboxTasks.length === 0 ? (
-              <div className="text-center py-12 bg-zinc-900/40 rounded-xl border border-white/5">
-                <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest">Vazio</p>
+              <div className="text-center py-12 bg-zinc-100 rounded-xl border border-zinc-200">
+                <p className="text-zinc-400 text-xs font-bold uppercase tracking-widest">Vazio</p>
               </div>
             ) : (
               inboxTasks.map((task) => (
-                <div key={task.id} className="flex items-center gap-3 p-3 bg-zinc-900 border border-white/5 rounded-xl group">
+                <div key={task.id} className="flex items-center gap-3 p-3 bg-zinc-50 border border-zinc-200 rounded-xl group">
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-sm text-white truncate">{task.description}</p>
+                    <p className="font-bold text-sm text-zinc-900 truncate">{task.description}</p>
                   </div>
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => moveTaskToToday(task.id)}
-                      className="px-3 py-1.5 bg-[#111111] rounded-lg shadow-sm border border-white/5 text-red-600 text-[10px] font-black uppercase tracking-tight hover:bg-zinc-800 transition-colors"
+                      className="px-3 py-1.5 bg-white rounded-lg shadow-sm border border-zinc-200 text-red-600 text-[10px] font-black uppercase tracking-tight hover:bg-zinc-50 transition-colors"
                     >
                       Hoje
                     </button>
                     <button
                       onClick={() => deleteTask(task.id)}
-                      className="p-1.5 text-zinc-600 hover:text-red-500 transition-colors"
+                      className="p-1.5 text-zinc-400 hover:text-red-500 transition-colors"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -346,7 +340,7 @@ export default function Tasks({ onBack }: { onBack: () => void }) {
               value={inboxInput}
               onChange={(e) => setInboxInput(e.target.value)}
               placeholder="Ideia ou tarefa rápida..."
-              className="flex-1 bg-zinc-900 border-white/5 text-white rounded-2xl px-6 py-4 text-sm font-bold focus:ring-2 focus:ring-red-500 transition-all shadow-inner"
+              className="flex-1 bg-zinc-100 border-zinc-200 text-zinc-900 rounded-2xl px-6 py-4 text-sm font-bold focus:ring-2 focus:ring-red-500 transition-all shadow-inner"
             />
             <button 
               type="submit"
@@ -367,25 +361,25 @@ export default function Tasks({ onBack }: { onBack: () => void }) {
         <div className="space-y-6">
           <div className="max-h-[50vh] overflow-y-auto pr-2 space-y-2">
             {(frequentTasks || []).length === 0 ? (
-              <div className="text-center py-12 bg-zinc-900/40 rounded-xl border border-white/5">
-                <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest">Nenhuma tarefa frequente</p>
+              <div className="text-center py-12 bg-zinc-100 rounded-xl border border-zinc-200">
+                <p className="text-zinc-400 text-xs font-bold uppercase tracking-widest">Nenhuma tarefa frequente</p>
               </div>
             ) : (
               (frequentTasks || []).map((desc, index) => (
-                <div key={index} className="flex items-center gap-3 p-3 bg-zinc-900 border border-white/5 rounded-xl group">
+                <div key={index} className="flex items-center gap-3 p-3 bg-zinc-50 border border-zinc-200 rounded-xl group">
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-sm text-white truncate">{desc}</p>
+                    <p className="font-bold text-sm text-zinc-900 truncate">{desc}</p>
                   </div>
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => addFrequentToToday(desc)}
-                      className="px-3 py-1.5 bg-[#111111] rounded-lg shadow-sm border border-white/5 text-red-600 text-[10px] font-black uppercase tracking-tight hover:bg-zinc-800 transition-colors"
+                      className="px-3 py-1.5 bg-white rounded-lg shadow-sm border border-zinc-200 text-red-600 text-[10px] font-black uppercase tracking-tight hover:bg-zinc-50 transition-colors"
                     >
                       Adicionar
                     </button>
                     <button
                       onClick={() => deleteFrequentTask(index)}
-                      className="p-1.5 text-zinc-600 hover:text-red-500 transition-colors"
+                      className="p-1.5 text-zinc-400 hover:text-red-500 transition-colors"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -401,7 +395,7 @@ export default function Tasks({ onBack }: { onBack: () => void }) {
               value={frequentInput}
               onChange={(e) => setFrequentInput(e.target.value)}
               placeholder="Nova tarefa frequente..."
-              className="flex-1 bg-zinc-900 border-white/5 text-white rounded-2xl px-6 py-4 text-sm font-bold focus:ring-2 focus:ring-red-500 transition-all shadow-inner"
+              className="flex-1 bg-zinc-100 border-zinc-200 text-zinc-900 rounded-2xl px-6 py-4 text-sm font-bold focus:ring-2 focus:ring-red-500 transition-all shadow-inner"
             />
             <button 
               type="submit"

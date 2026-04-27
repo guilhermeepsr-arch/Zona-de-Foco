@@ -38,7 +38,7 @@ function ProgressCircle({ current, total }: { current: number; total: number }) 
           stroke="currentColor"
           strokeWidth="3"
           fill="transparent"
-          className="text-white/5"
+          className="text-zinc-100"
         />
         <circle
           cx="20"
@@ -51,11 +51,11 @@ function ProgressCircle({ current, total }: { current: number; total: number }) 
           style={{ strokeDashoffset: offset }}
           className={cn(
             "transition-all duration-1000 ease-out",
-            percentage === 100 ? "text-green-500" : "text-red-600"
+            percentage === 100 ? "text-emerald-500" : "text-red-500"
           )}
         />
       </svg>
-      <span className="absolute text-[8px] font-black text-white">
+      <span className="absolute text-[8px] font-black text-zinc-900">
         {Math.round(percentage)}%
       </span>
     </div>
@@ -81,17 +81,17 @@ function ListItemComponent({
       dragListener={false}
       dragControls={controls}
       className={cn(
-        "group flex items-center gap-4 p-4 bg-zinc-900/40 border border-white/5 rounded-2xl transition-all mb-3",
+        "group flex items-center gap-4 p-4 bg-white border border-zinc-200 rounded-2xl transition-all mb-3 shadow-sm",
         item.completed && "opacity-40 grayscale-[0.5]"
       )}
     >
       <button
         onClick={() => toggleListItem(listId, item.id)}
         className={cn(
-          "w-6 h-6 rounded-lg flex items-center justify-center transition-all flex-shrink-0 border-2",
+          "w-6 h-6 rounded-lg flex items-center justify-center transition-all flex-shrink-0 border-2 shadow-sm",
           item.completed 
-            ? "bg-red-600 border-red-600 text-white shadow-lg shadow-red-900/40 scale-110" 
-            : "bg-zinc-950 border-zinc-800 hover:border-red-600/50"
+            ? "bg-red-600 border-red-600 text-white" 
+            : "bg-zinc-50 border-zinc-200 hover:border-red-600/50"
         )}
       >
         <AnimatePresence>
@@ -114,7 +114,7 @@ function ListItemComponent({
               if (e.key === 'Enter') handleSaveEdit(listId, item.id);
               if (e.key === 'Escape') setEditingId(null);
             }}
-            className="w-full bg-transparent border-none outline-none py-1 text-sm font-bold text-white placeholder:text-zinc-700"
+            className="w-full bg-transparent border-none outline-none py-1 text-sm font-bold text-zinc-900 placeholder:text-zinc-300"
           />
         ) : (
           <p 
@@ -124,7 +124,7 @@ function ListItemComponent({
             }}
             className={cn(
               "font-bold text-sm transition-all truncate cursor-text tracking-tight uppercase",
-              item.completed ? "text-zinc-600 line-through" : "text-white"
+              item.completed ? "text-zinc-400 line-through" : "text-zinc-900"
             )}
           >
             {item.description}
@@ -135,13 +135,13 @@ function ListItemComponent({
       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
         <button
           onClick={() => deleteListItem(listId, item.id)}
-          className="p-2 text-zinc-600 hover:text-red-500 transition-colors"
+          className="p-2 text-zinc-400 hover:text-red-500 transition-colors"
         >
           <Trash2 className="w-4 h-4" />
         </button>
         <div 
           onPointerDown={(e) => controls.start(e)}
-          className="p-2 text-zinc-800 cursor-grab active:cursor-grabbing touch-none"
+          className="p-2 text-zinc-200 cursor-grab active:cursor-grabbing touch-none"
         >
           <GripVertical className="w-4 h-4" />
         </div>
@@ -206,18 +206,20 @@ export default function Lists({ onBack }: { onBack: () => void }) {
   };
 
   return (
-    <div className="pb-32 bg-[#080808] min-h-screen text-white">
+    <div className="pb-32 bg-[#f8f8f8] min-h-screen text-zinc-900">
       <header className="px-6 pt-10 mb-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <button 
-              onClick={activeListId ? () => setActiveListId(null) : onBack}
-              className="w-10 h-10 bg-zinc-900/50 rounded-xl flex items-center justify-center text-zinc-500 hover:text-white transition-all shadow-xl"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
+            {activeListId && (
+              <button 
+                onClick={() => setActiveListId(null)}
+                className="w-10 h-10 bg-white rounded-xl border border-zinc-200 flex items-center justify-center text-zinc-400 hover:text-zinc-900 transition-all shadow-sm"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+            )}
             <div>
-              <h1 className="text-2xl font-black uppercase tracking-tighter leading-none">
+              <h1 className="text-2xl font-black uppercase tracking-tighter leading-none text-zinc-900">
                 {activeList ? activeList.name : 'Suas Listas'}
               </h1>
               <p className="text-[10px] font-black text-red-600 uppercase tracking-[0.2em] mt-1.5 opacity-80">
@@ -228,7 +230,7 @@ export default function Lists({ onBack }: { onBack: () => void }) {
           {!activeListId && (
             <button
               onClick={() => setIsNewListModalOpen(true)}
-              className="w-12 h-12 bg-red-600 rounded-2xl flex items-center justify-center shadow-lg shadow-red-900/20 active:scale-95 transition-transform"
+              className="w-12 h-12 bg-red-600 rounded-2xl flex items-center justify-center shadow-lg shadow-red-900/10 active:scale-95 transition-transform"
             >
               <Plus className="w-6 h-6 text-white stroke-[3]" />
             </button>
@@ -257,30 +259,30 @@ export default function Lists({ onBack }: { onBack: () => void }) {
                   >
                     <Card 
                       onClick={() => setActiveListId(list.id)}
-                      className="relative p-6 bg-zinc-900/20 hover:bg-zinc-900/40 border border-white/5 rounded-[2.5rem] transition-all cursor-pointer group overflow-hidden"
+                      className="relative p-6 bg-white border border-zinc-200 rounded-[2.5rem] transition-all cursor-pointer group shadow-sm hover:shadow-md overflow-hidden"
                     >
                       {/* Background accent */}
                       <div className="absolute top-0 right-0 w-32 h-32 bg-red-600/5 blur-[40px] -mr-16 -mt-16 group-hover:bg-red-600/10 transition-colors" />
                       
                       <div className="flex items-center gap-5">
-                        <div className="w-16 h-16 bg-zinc-950 border border-white/5 rounded-3xl flex items-center justify-center text-3xl shadow-2xl transition-transform group-hover:scale-105 duration-500">
+                        <div className="w-16 h-16 bg-zinc-50 border border-zinc-100 rounded-3xl flex items-center justify-center text-3xl shadow-sm transition-transform group-hover:scale-105 duration-500">
                           {list.icon || '📝'}
                         </div>
                         <div className="flex-1">
-                          <h3 className="text-base font-black uppercase tracking-tight group-hover:text-red-500 transition-colors">
+                          <h3 className="text-base font-black uppercase tracking-tight text-zinc-900 group-hover:text-red-500 transition-colors">
                             {list.name}
                           </h3>
                           <div className="flex items-center gap-3 mt-2">
                             <ProgressCircle current={completedCount} total={list.items.length} />
                             <div className="flex flex-col">
-                              <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest leading-none">Status</span>
-                              <span className="text-[10px] font-bold text-white uppercase mt-1">
+                              <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest leading-none">Status</span>
+                              <span className="text-[10px] font-bold text-zinc-900 uppercase mt-1">
                                 {completedCount} de {list.items.length} feitos
                               </span>
                             </div>
                           </div>
                         </div>
-                        <div className="w-10 h-10 bg-zinc-900/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all transform translate-x-4 group-hover:translate-x-0">
+                        <div className="w-10 h-10 bg-zinc-50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all transform translate-x-4 group-hover:translate-x-0 shadow-sm border border-zinc-100">
                           <PlusCircle className="w-5 h-5 text-zinc-400" />
                         </div>
                       </div>
@@ -290,12 +292,12 @@ export default function Lists({ onBack }: { onBack: () => void }) {
               })}
               
               {sortedLists.length === 0 && (
-                <div className="text-center py-24 bg-zinc-900/10 rounded-[3rem] border border-white/5">
-                  <PackageOpen className="w-16 h-16 text-zinc-800 mx-auto mb-6" />
-                  <p className="text-zinc-500 font-black uppercase tracking-[0.3em] text-xs">Sem Listas Ativas</p>
+                <div className="text-center py-24 bg-zinc-100 rounded-[3rem] border border-zinc-300 border-dashed">
+                  <PackageOpen className="w-16 h-16 text-zinc-300 mx-auto mb-6" />
+                  <p className="text-zinc-400 font-black uppercase tracking-[0.3em] text-xs">Sem Listas Ativas</p>
                   <button 
                     onClick={() => setIsNewListModalOpen(true)}
-                    className="mt-6 text-[10px] font-black text-red-600 uppercase tracking-widest hover:text-white transition-colors"
+                    className="mt-6 text-[10px] font-black text-red-600 uppercase tracking-widest hover:text-zinc-900 transition-colors"
                   >
                     + Criar Minha Primeira Lista
                   </button>
@@ -312,22 +314,22 @@ export default function Lists({ onBack }: { onBack: () => void }) {
             >
               <div className="flex items-center justify-between px-2">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-zinc-900 rounded-2xl flex items-center justify-center text-2xl shadow-inner">
+                  <div className="w-12 h-12 bg-white rounded-2xl border border-zinc-200 flex items-center justify-center text-2xl shadow-sm">
                     {activeList.icon || '📝'}
                   </div>
                   <button 
                     onClick={() => setIsEditListModalOpen(true)}
                     className="flex flex-col hover:opacity-70 transition-opacity"
                   >
-                    <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Configurações</span>
-                    <span className="text-xs font-black uppercase tracking-widest text-white flex items-center gap-1.5">
+                    <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Configurações</span>
+                    <span className="text-xs font-black uppercase tracking-widest text-zinc-900 flex items-center gap-1.5">
                       Personalizar <MoreHorizontal className="w-3 h-3" />
                     </span>
                   </button>
                 </div>
               </div>
 
-              <div className="bg-zinc-900/10 rounded-[2.5rem] p-6 border border-white/5">
+              <div className="bg-zinc-100/50 rounded-[2.5rem] p-6 border border-zinc-200">
                 <form onSubmit={handleAddListItem} className="flex gap-3 mb-8">
                   <input
                     autoFocus
@@ -335,7 +337,7 @@ export default function Lists({ onBack }: { onBack: () => void }) {
                     value={newItemInput}
                     onChange={(e) => setNewItemInput(e.target.value)}
                     placeholder="O que vamos adicionar?"
-                    className="flex-1 bg-zinc-950 border-none text-white rounded-2xl px-6 py-4 text-xs font-black uppercase tracking-widest focus:ring-2 focus:ring-red-600 transition-all shadow-inner"
+                    className="flex-1 bg-white border border-zinc-200 text-zinc-900 rounded-2xl px-6 py-4 text-xs font-black uppercase tracking-widest focus:ring-2 focus:ring-red-600 transition-all shadow-inner placeholder:text-zinc-300"
                   />
                   <button 
                     type="submit"
@@ -393,12 +395,12 @@ export default function Lists({ onBack }: { onBack: () => void }) {
               <button 
                 type="button"
                 onClick={() => setIsIconPickerOpen(!isIconPickerOpen)}
-                className="w-24 h-24 bg-zinc-950 rounded-[2.5rem] flex items-center justify-center text-4xl shadow-2xl border-2 border-white/5 hover:border-red-600/30 transition-all"
+                className="w-24 h-24 bg-zinc-50 rounded-[2.5rem] flex items-center justify-center text-4xl shadow-sm border-2 border-zinc-200 hover:border-red-600/30 transition-all"
               >
                 {newListIcon}
               </button>
               {isIconPickerOpen && (
-                <div className="absolute top-0 left-full ml-4 bg-[#111111] border border-white/10 shadow-2xl rounded-3xl p-4 z-50 grid grid-cols-4 gap-2 w-56 animate-in slide-in-from-left-4 duration-300">
+                <div className="absolute top-0 left-full ml-4 bg-white border border-zinc-200 shadow-2xl rounded-3xl p-4 z-50 grid grid-cols-4 gap-2 w-56 animate-in slide-in-from-left-4 duration-300">
                   {['📝', '🛒', '🎬', '📂', '💡', '✈️', '🍔', '🎨', '🚀', '🎁', '📅', '💻', '🏋️', '📚', '🎵', '🌿', '⚙️', '🔥', '💎', '🔑'].map(emoji => (
                     <button 
                       key={emoji}
@@ -407,7 +409,7 @@ export default function Lists({ onBack }: { onBack: () => void }) {
                         setNewListIcon(emoji);
                         setIsIconPickerOpen(false);
                       }}
-                      className="w-10 h-10 flex items-center justify-center hover:bg-zinc-800 rounded-xl text-xl transition-all"
+                      className="w-10 h-10 flex items-center justify-center hover:bg-zinc-100 rounded-xl text-xl transition-all"
                     >
                       {emoji}
                     </button>
@@ -416,18 +418,18 @@ export default function Lists({ onBack }: { onBack: () => void }) {
               )}
             </div>
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Identificação da Lista</label>
+              <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Identificação da Lista</label>
               <input
                 autoFocus
                 type="text"
                 value={newListName}
                 onChange={(e) => setNewListName(e.target.value)}
                 placeholder="Ex: PROJETOS X"
-                className="w-full bg-zinc-900 border-white/5 text-white rounded-3xl px-8 py-6 text-base font-black uppercase text-center focus:ring-2 focus:ring-red-500 transition-all shadow-inner"
+                className="w-full bg-zinc-100 border border-zinc-200 text-zinc-900 rounded-3xl px-8 py-6 text-base font-black uppercase text-center focus:ring-2 focus:ring-red-500 transition-all shadow-inner placeholder:text-zinc-300"
               />
             </div>
           </div>
-          <Button type="submit" className="w-full py-5 rounded-3xl text-[10px] font-black uppercase tracking-[0.3em]">Criar Agora</Button>
+          <Button type="submit" className="w-full py-5 rounded-3xl text-[10px] font-black uppercase tracking-[0.3em] bg-zinc-900 text-white">Criar Agora</Button>
         </form>
       </Modal>
 
@@ -446,12 +448,12 @@ export default function Lists({ onBack }: { onBack: () => void }) {
               <button 
                 type="button"
                 onClick={() => setIsIconPickerOpen(!isIconPickerOpen)}
-                className="w-20 h-20 bg-zinc-950 rounded-3xl flex items-center justify-center text-3xl shadow-2xl border-2 border-white/5"
+                className="w-20 h-20 bg-zinc-100 rounded-3xl flex items-center justify-center text-3xl shadow-sm border-2 border-zinc-200"
               >
                 {activeList?.icon || '📝'}
               </button>
               {isIconPickerOpen && activeList && (
-                <div className="absolute top-0 left-full ml-4 bg-[#111111] border border-white/10 shadow-2xl rounded-3xl p-4 z-50 grid grid-cols-4 gap-2 w-56 animate-in slide-in-from-left-4">
+                <div className="absolute top-0 left-full ml-4 bg-white border border-zinc-200 shadow-2xl rounded-3xl p-4 z-50 grid grid-cols-4 gap-2 w-56 animate-in slide-in-from-left-4">
                   {['📝', '🛒', '🎬', '📂', '💡', '✈️', '🍔', '🎨', '🚀', '🎁', '📅', '💻', '🏋️', '📚', '🎵', '🌿'].map(emoji => (
                     <button 
                       key={emoji}
@@ -460,7 +462,7 @@ export default function Lists({ onBack }: { onBack: () => void }) {
                         updateList(activeList.id, { icon: emoji });
                         setIsIconPickerOpen(false);
                       }}
-                      className="w-10 h-10 flex items-center justify-center hover:bg-zinc-800 rounded-xl text-xl transition-all"
+                      className="w-10 h-10 flex items-center justify-center hover:bg-zinc-100 rounded-xl text-xl transition-all"
                     >
                       {emoji}
                     </button>
@@ -469,17 +471,17 @@ export default function Lists({ onBack }: { onBack: () => void }) {
               )}
             </div>
             <div className="space-y-2 text-left">
-              <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-4">Nome da Lista</label>
+              <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-4">Nome da Lista</label>
               <input
                 type="text"
                 value={activeList?.name || ''}
                 onChange={(e) => activeListId && updateList(activeListId, { name: e.target.value })}
-                className="w-full bg-zinc-950 border-white/5 text-white rounded-[2rem] px-8 py-5 text-sm font-black uppercase focus:ring-2 focus:ring-red-500 shadow-inner"
+                className="w-full bg-zinc-100 border border-zinc-200 text-zinc-900 rounded-[2rem] px-8 py-5 text-sm font-black uppercase focus:ring-2 focus:ring-red-500 shadow-inner"
               />
             </div>
           </div>
 
-          <div className="pt-8 border-t border-white/5 space-y-4">
+          <div className="pt-8 border-t border-zinc-100 space-y-4">
             <button
               onClick={() => {
                 if (activeListId && confirm('Deseja realmente excluir esta lista permanentemente?')) {
@@ -488,11 +490,11 @@ export default function Lists({ onBack }: { onBack: () => void }) {
                   setIsEditListModalOpen(false);
                 }
               }}
-              className="w-full py-5 flex items-center justify-center gap-3 bg-red-600/5 text-red-500 rounded-[2rem] text-[9px] font-black uppercase tracking-[0.3em] border border-red-600/10 hover:bg-red-600 hover:text-white transition-all shadow-lg"
+              className="w-full py-5 flex items-center justify-center gap-3 bg-red-600/5 text-red-500 rounded-[2rem] text-[9px] font-black uppercase tracking-[0.3em] border border-red-600/10 hover:bg-red-600 hover:text-white transition-all"
             >
               <Trash2 className="w-4 h-4" /> Deletar Lista
             </button>
-            <Button onClick={() => setIsEditListModalOpen(false)} className="w-full py-5 rounded-[2rem] bg-zinc-800 text-white">Fechar</Button>
+            <Button onClick={() => setIsEditListModalOpen(false)} className="w-full py-5 rounded-[2rem] bg-zinc-100 text-zinc-900">Fechar</Button>
           </div>
         </div>
       </Modal>
