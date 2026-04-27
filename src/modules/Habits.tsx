@@ -69,37 +69,48 @@ const calculateStreaks = (completedDates: string[] = []) => {
 
 // --- Components ---
 
-function HabitGrid({ completions = [], startDate, daysCount = 10 }: { completions?: string[], startDate: Date, daysCount?: number }) {
-  const days = eachDayOfInterval({
-    start: startDate,
-    end: addDays(startDate, daysCount - 1)
+function HabitGrid({ completions = [] }: { completions?: string[] }) {
+  const today = startOfDay(new Date());
+  // We want to show 4 lines of 28 days = 112 days total
+  // The first day (top-left) will be today minus 111 days
+  const startDate = startOfDay(subDays(new Date(), 111));
+  
+  // Create 4 rows of 28 days
+  const rows = [0, 1, 2, 3].map(rowIdx => {
+    const rowStart = addDays(startDate, rowIdx * 28);
+    return eachDayOfInterval({
+      start: rowStart,
+      end: addDays(rowStart, 27)
+    });
   });
 
-  const today = startOfDay(new Date());
-
   return (
-    <div className="flex gap-1.5">
-      {days.map((day) => {
-        const dateStr = getISODate(day);
-        const isCompleted = completions?.includes(dateStr) || false;
-        const isFuture = isAfter(day, today);
-        const isPast = isBefore(day, today) && !isSameDayDateFns(day, today);
-        const isTodayDay = isSameDayDateFns(day, today);
+    <div className="flex flex-col gap-[2px] sm:gap-[3px] mt-4 overflow-hidden">
+      {rows.map((days, rIdx) => (
+        <div key={rIdx} className="flex gap-[2px] sm:gap-[3px]">
+          {days.map((day) => {
+            const dateStr = getISODate(day);
+            const isCompleted = completions?.includes(dateStr) || false;
+            const isTodayDay = isSameDayDateFns(day, today);
+            const isFuture = isAfter(day, today);
+            const isPast = isBefore(day, today) && !isTodayDay;
 
-        return (
-          <div
-            key={dateStr}
-            className={cn(
-              "w-2.5 h-2.5 rounded-[3px] transition-all duration-300",
-              isCompleted ? "bg-[#10b981]" : 
-              isFuture ? "bg-zinc-100" : 
-              isPast ? "bg-red-100/50" : "bg-zinc-200",
-              isTodayDay && !isCompleted && "border border-zinc-300"
-            )}
-            title={format(day, "dd/MM/yyyy")}
-          />
-        );
-      })}
+            return (
+              <div
+                key={dateStr}
+                className={cn(
+                  "w-[5px] h-[5px] sm:w-[8px] sm:h-[8px] rounded-[1px] sm:rounded-[1.5px] transition-all",
+                  isFuture ? "bg-zinc-100/50" : 
+                  isCompleted ? "bg-emerald-500" :
+                  isPast ? "bg-red-500/40" : "bg-zinc-200",
+                  isTodayDay && !isCompleted && "ring-1 ring-zinc-400 ring-offset-0"
+                )}
+                title={format(day, "dd/MM/yyyy")}
+              />
+            );
+          })}
+        </div>
+      ))}
     </div>
   );
 }
@@ -121,46 +132,43 @@ function HabitItem({
   const today = getISODate(new Date());
   const isTodayCompleted = completedDates.includes(today);
 
-  const todayDate = startOfDay(new Date());
-  const current10DaysStart = subDays(todayDate, 9);
-  const last10DaysStart = subDays(current10DaysStart, 10);
-
   return (
     <Reorder.Item
       value={habit}
       dragListener={false}
       dragControls={controls}
-      className="group bg-white p-5 rounded-3xl border border-zinc-200 shadow-sm mb-4"
+      className="group bg-white p-6 rounded-[2.5rem] border border-zinc-200 shadow-sm mb-5"
     >
-      <div className="flex justify-between items-start mb-4">
-        <div className="flex items-center gap-3 cursor-pointer" onClick={() => onOpenDetails(habit)}>
-          <span className="text-xl">{habit.icon || '✨'}</span>
-          <h3 className="text-sm font-bold text-zinc-900 tracking-tight">{habit.name}</h3>
-        </div>
-
-        <button
-          onClick={() => onToggle(habit.id)}
-          className={cn(
-            "w-11 h-11 rounded-2xl flex items-center justify-center transition-all active:scale-95",
-            isTodayCompleted 
-              ? "bg-emerald-50 text-emerald-600 border border-emerald-200" 
-              : "bg-zinc-100 border border-zinc-200 text-zinc-300"
+      <div className="flex justify-between items-start">
+        <div className="flex-1 cursor-pointer" onClick={() => onOpenDetails(habit)}>
+          <div className="flex items-center gap-3 mb-1">
+            <span className="text-xl">{habit.icon || '✨'}</span>
+            <h3 className="text-sm font-bold text-zinc-900 tracking-tight uppercase">{habit.name}</h3>
+          </div>
+          {habit.motivation && (
+            <p className="text-[10px] font-medium text-zinc-400 uppercase tracking-widest ml-1 mb-2">
+              {habit.motivation}
+            </p>
           )}
-        >
-          <Check className={cn("w-5 h-5 stroke-[4]", isTodayCompleted ? "opacity-100" : "opacity-20")} />
-        </button>
-      </div>
-
-      <div className="flex items-end justify-between">
-        <div className="space-y-1.5">
-          <HabitGrid completions={completedDates} startDate={last10DaysStart} daysCount={10} />
-          <HabitGrid completions={completedDates} startDate={current10DaysStart} daysCount={10} />
+          
+          <HabitGrid completions={completedDates} />
         </div>
-        
-        <div className="flex flex-col items-center gap-1 min-w-[60px]">
-          <div className="flex items-center gap-1">
-             <span className="text-xs">🔥</span>
-             <span className="text-[10px] font-black text-zinc-900 uppercase tracking-widest">{streak} DIAS</span>
+
+        <div className="flex flex-col items-center gap-2 ml-4 shrink-0">
+          <button
+            onClick={() => onToggle(habit.id)}
+            className={cn(
+              "w-12 h-12 rounded-2xl flex items-center justify-center transition-all active:scale-95 shadow-sm",
+              isTodayCompleted 
+                ? "bg-emerald-500 text-white border border-emerald-600 shadow-md shadow-emerald-200" 
+                : "bg-white border border-zinc-200 text-zinc-200 hover:text-zinc-400"
+            )}
+          >
+            <Check className={cn("w-6 h-6 stroke-[4]", isTodayCompleted ? "opacity-100" : "opacity-40")} />
+          </button>
+          <div className="flex items-center gap-1.5">
+             <Flame className={cn("w-3.5 h-3.5", streak > 0 ? "text-orange-500 fill-orange-500" : "text-zinc-300")} />
+             <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">{streak} {streak === 1 ? 'dia' : 'dias'}</span>
           </div>
         </div>
       </div>
@@ -187,7 +195,9 @@ export default function Habits({ onBack }: { onBack: () => void }) {
   const [isIconPickerOpen, setIsIconPickerOpen] = useState(false);
   const [selectedHabitId, setSelectedHabitId] = useState<string | null>(null);
   const [newHabitName, setNewHabitName] = useState('');
+  const [newHabitMotivation, setNewHabitMotivation] = useState('');
   const [editingName, setEditingName] = useState('');
+  const [editingMotivation, setEditingMotivation] = useState('');
 
   const selectedHabit = useMemo(() => {
     return habits.find(h => h.id === selectedHabitId) || null;
@@ -200,14 +210,18 @@ export default function Habits({ onBack }: { onBack: () => void }) {
   const handleAddHabit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newHabitName.trim()) return;
-    addHabit({ name: newHabitName });
+    addHabit({ name: newHabitName, motivation: newHabitMotivation });
     setNewHabitName('');
+    setNewHabitMotivation('');
     setIsModalOpen(false);
   };
 
   const handleSaveEdit = () => {
     if (selectedHabitId && editingName.trim()) {
-      updateHabit(selectedHabitId, { name: editingName });
+      updateHabit(selectedHabitId, { 
+        name: editingName,
+        motivation: editingMotivation 
+      });
     }
   };
 
@@ -253,6 +267,7 @@ export default function Habits({ onBack }: { onBack: () => void }) {
               onOpenDetails={(h) => {
                 setSelectedHabitId(h.id);
                 setEditingName(h.name);
+                setEditingMotivation(h.motivation || '');
               }}
             />
           ))
@@ -275,7 +290,17 @@ export default function Habits({ onBack }: { onBack: () => void }) {
               className="w-full bg-zinc-100 border-none rounded-2xl px-6 py-4 text-base font-bold text-zinc-900 placeholder:text-zinc-300 focus:ring-2 focus:ring-red-500 transition-all shadow-inner"
             />
           </div>
-          <Button
+            <div>
+              <label className="block text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2 ml-1">Frase de Motivação</label>
+              <input
+                type="text"
+                value={newHabitMotivation}
+                onChange={(e) => setNewHabitMotivation(e.target.value)}
+                placeholder="Ex: Fique forte, não desista!"
+                className="w-full bg-zinc-100 border-none rounded-2xl px-6 py-4 text-base font-bold text-zinc-900 placeholder:text-zinc-300 focus:ring-2 focus:ring-red-500 transition-all shadow-inner"
+              />
+            </div>
+            <Button
             type="submit"
             className="w-full py-4 bg-zinc-900 text-white rounded-2xl font-black uppercase tracking-widest shadow-lg shadow-zinc-200 active:scale-95 transition-transform"
           >
@@ -398,14 +423,22 @@ export default function Habits({ onBack }: { onBack: () => void }) {
                      </div>
                    )}
                 </div>
-                <div className="flex-1 flex gap-2">
+                <div className="flex-1 flex flex-col gap-3">
                   <input
                     type="text"
                     value={editingName}
                     onChange={(e) => setEditingName(e.target.value)}
-                    className="flex-1 bg-zinc-100 border-none rounded-2xl px-4 sm:px-6 py-4 text-sm sm:text-base font-bold text-zinc-900 focus:ring-2 focus:ring-red-500 shadow-inner min-w-0"
+                    placeholder="Nome do Hábito"
+                    className="w-full bg-zinc-100 border-none rounded-2xl px-4 sm:px-6 py-4 text-sm sm:text-base font-bold text-zinc-900 focus:ring-2 focus:ring-red-500 shadow-inner min-w-0"
                   />
-                  <Button onClick={handleSaveEdit} className="px-5 sm:px-6 bg-zinc-900 text-white shrink-0">OK</Button>
+                  <input
+                    type="text"
+                    value={editingMotivation}
+                    onChange={(e) => setEditingMotivation(e.target.value)}
+                    placeholder="Frase de Motivação"
+                    className="w-full bg-zinc-100 border-none rounded-2xl px-4 sm:px-6 py-4 text-sm sm:text-base font-bold text-zinc-900 focus:ring-2 focus:ring-red-500 shadow-inner min-w-0"
+                  />
+                  <Button onClick={handleSaveEdit} className="w-full bg-zinc-900 text-white">Salvar Alterações</Button>
                 </div>
               </div>
             </div>

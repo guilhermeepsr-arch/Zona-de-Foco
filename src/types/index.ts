@@ -63,6 +63,7 @@ export interface Habit {
   id: string;
   name: string;
   icon?: string;
+  motivation?: string;
   completedDates: string[]; // ISO date strings (yyyy-MM-dd)
   order: number;
 }
