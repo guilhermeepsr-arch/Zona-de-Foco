@@ -23,12 +23,11 @@ import { ptBR } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'motion/react';
 
 export default function Diary({ onBack }: { onBack: () => void }) {
-  const { diaryEntries, diaryTemplates, saveDiaryEntry, addDiaryTemplate } = useAppStore();
+  const { diaryEntries, diaryTemplates, saveDiaryEntry, addDiaryTemplate, deleteDiaryTemplate } = useAppStore();
   const [currentDate, setCurrentDate] = useState(startOfToday());
   const [noteContent, setNoteContent] = useState('');
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [newTemplateName, setNewTemplateName] = useState('');
-  const [isEditorOpen, setIsEditorOpen] = useState(false);
 
   // Sync content with date
   useEffect(() => {
@@ -55,7 +54,10 @@ export default function Diary({ onBack }: { onBack: () => void }) {
 
   const handleCreateTemplate = () => {
     if (newTemplateName.trim()) {
-      addDiaryTemplate(newTemplateName, "");
+      addDiaryTemplate({
+        name: newTemplateName,
+        content: noteContent
+      });
       setNewTemplateName('');
       setIsTemplateModalOpen(false);
     }
@@ -156,21 +158,54 @@ export default function Diary({ onBack }: { onBack: () => void }) {
       <Modal
         isOpen={isTemplateModalOpen}
         onClose={() => setIsTemplateModalOpen(false)}
-        title="Novo Template"
+        title="Gerenciar Templates"
       >
-        <div className="space-y-6">
+        <div className="space-y-8">
           <div>
-            <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2 block ml-1">Nome do Template</label>
-            <input
-              autoFocus
-              type="text"
-              value={newTemplateName}
-              onChange={(e) => setNewTemplateName(e.target.value)}
-              placeholder="Ex: Gratidão, Resumo"
-              className="w-full bg-zinc-100 border-none rounded-2xl px-6 py-4 text-sm font-bold text-zinc-900 focus:ring-2 focus:ring-red-500 shadow-inner"
-            />
+            <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-3 block ml-1">Criar Novo Template</label>
+            <div className="flex gap-2">
+              <input
+                autoFocus
+                type="text"
+                value={newTemplateName}
+                onChange={(e) => setNewTemplateName(e.target.value)}
+                placeholder="Nome do Template"
+                className="flex-1 bg-zinc-100 border-none rounded-2xl px-6 py-4 text-sm font-bold text-zinc-900 focus:ring-2 focus:ring-red-500 shadow-inner"
+              />
+              <button 
+                onClick={handleCreateTemplate}
+                disabled={!newTemplateName.trim()}
+                className="w-14 h-14 bg-zinc-900 text-white rounded-2xl flex items-center justify-center disabled:opacity-50 active:scale-95 transition-all shadow-lg"
+              >
+                <Plus className="w-6 h-6 stroke-[3]" />
+              </button>
+            </div>
+            <p className="text-[9px] text-zinc-400 font-medium px-2 mt-2 italic">O conteúdo atual do diário será salvo como template.</p>
           </div>
-          <Button onClick={handleCreateTemplate} className="w-full py-4 bg-zinc-900 text-white rounded-2xl font-black uppercase tracking-widest text-[10px]">Criar Template</Button>
+
+          <div className="pt-6 border-t border-zinc-100">
+            <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-4 block ml-1">Templates Existentes</label>
+            <div className="space-y-3">
+              {diaryTemplates.length === 0 ? (
+                <p className="text-center py-8 text-zinc-300 text-[10px] font-black uppercase tracking-widest">Nenhum template salvo</p>
+              ) : (
+                diaryTemplates.map(template => (
+                  <div key={template.id} className="flex items-center justify-between p-4 bg-zinc-50 rounded-2xl border border-zinc-100 group">
+                    <div className="flex flex-col">
+                      <span className="text-xs font-bold text-zinc-900">{template.name}</span>
+                      <span className="text-[9px] font-medium text-zinc-400 truncate max-w-[200px]">{template.content || 'Sem conteúdo'}</span>
+                    </div>
+                    <button 
+                      onClick={() => deleteDiaryTemplate(template.id)}
+                      className="w-9 h-9 flex items-center justify-center bg-white text-zinc-300 hover:text-red-500 rounded-xl transition-colors border border-transparent hover:border-red-100 shadow-sm"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
         </div>
       </Modal>
     </div>
