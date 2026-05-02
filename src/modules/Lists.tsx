@@ -18,7 +18,8 @@ import {
   LayoutGrid, 
   MoreHorizontal,
   PlusCircle,
-  PackageOpen
+  PackageOpen,
+  Settings
 } from 'lucide-react';
 import { ListItem, List } from '../types';
 
@@ -123,7 +124,7 @@ function ListItemComponent({
               setEditValue(item.description);
             }}
             className={cn(
-              "font-bold text-sm transition-all truncate cursor-text tracking-tight uppercase",
+              "font-bold text-[13px] transition-all truncate cursor-text tracking-tight",
               item.completed ? "text-zinc-400 line-through" : "text-zinc-900"
             )}
           >
@@ -227,7 +228,14 @@ export default function Lists({ onBack }: { onBack: () => void }) {
               </p>
             </div>
           </div>
-          {!activeListId && (
+          {activeListId ? (
+            <button
+              onClick={() => setIsEditListModalOpen(true)}
+              className="w-10 h-10 bg-white rounded-xl border border-zinc-200 flex items-center justify-center text-zinc-400 hover:text-zinc-900 transition-all shadow-sm"
+            >
+              <Settings className="w-5 h-5" />
+            </button>
+          ) : (
             <button
               onClick={() => setIsNewListModalOpen(true)}
               className="w-12 h-12 bg-red-600 rounded-2xl flex items-center justify-center shadow-lg shadow-red-900/10 active:scale-95 transition-transform"
@@ -312,23 +320,6 @@ export default function Lists({ onBack }: { onBack: () => void }) {
               exit={{ opacity: 0, x: -20 }}
               className="space-y-8"
             >
-              <div className="flex items-center justify-between px-2">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-white rounded-2xl border border-zinc-200 flex items-center justify-center text-2xl shadow-sm">
-                    {activeList.icon || '📝'}
-                  </div>
-                  <button 
-                    onClick={() => setIsEditListModalOpen(true)}
-                    className="flex flex-col hover:opacity-70 transition-opacity"
-                  >
-                    <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Configurações</span>
-                    <span className="text-xs font-black uppercase tracking-widest text-zinc-900 flex items-center gap-1.5">
-                      Personalizar <MoreHorizontal className="w-3 h-3" />
-                    </span>
-                  </button>
-                </div>
-              </div>
-
               <div className="bg-zinc-100/50 rounded-[2.5rem] p-6 border border-zinc-200">
                 <form onSubmit={handleAddListItem} className="flex gap-3 mb-8">
                   <input
@@ -337,7 +328,7 @@ export default function Lists({ onBack }: { onBack: () => void }) {
                     value={newItemInput}
                     onChange={(e) => setNewItemInput(e.target.value)}
                     placeholder="O que vamos adicionar?"
-                    className="flex-1 bg-white border border-zinc-200 text-zinc-900 rounded-2xl px-6 py-4 text-xs font-black uppercase tracking-widest focus:ring-2 focus:ring-red-600 transition-all shadow-inner placeholder:text-zinc-300"
+                    className="flex-1 bg-white border border-zinc-200 text-zinc-900 rounded-2xl px-6 py-4 text-[13px] font-bold tracking-tight focus:ring-2 focus:ring-red-600 transition-all shadow-inner placeholder:text-zinc-300"
                   />
                   <button 
                     type="submit"
