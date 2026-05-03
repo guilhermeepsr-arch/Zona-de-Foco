@@ -17,6 +17,7 @@ export const useAppStore = create<AppState & AppActions>()(
       tasks: [],
       goals: [],
       habits: [],
+      habitCategories: ['Shape', 'Mente'],
       lists: [],
       habitTemplates: [],
       frequentTasks: [],
@@ -216,7 +217,7 @@ export const useAppStore = create<AppState & AppActions>()(
       addHabit: (data) => {
         const id = generateId();
         set((state) => ({
-          habits: [...state.habits, { ...data, id, completedDates: [], order: state.habits.length }],
+          habits: [...state.habits, { ...data, id, completedDates: [], failedDates: [], order: state.habits.length }],
         }));
       },
 
@@ -230,10 +231,42 @@ export const useAppStore = create<AppState & AppActions>()(
               const newCompletedDates = isCompleted
                 ? currentCompletedDates.filter((d) => d !== targetDate)
                 : [...currentCompletedDates, targetDate];
-              return { ...h, completedDates: newCompletedDates };
+              return { ...h, completedDates: newCompletedDates, failedDates: (h.failedDates || []).filter(d => d !== targetDate) };
             }
             return h;
           }),
+        })),
+
+      cycleHabitStatus: (id, date) =>
+        set((state) => ({
+          habits: state.habits.map((h) => {
+            if (h.id === id) {
+              const comp = h.completedDates || [];
+              const fail = h.failedDates || [];
+              
+              if (comp.includes(date)) {
+                // Was checked -> move to X
+                return {
+                  ...h,
+                  completedDates: comp.filter(d => d !== date),
+                  failedDates: [...fail, date]
+                };
+              } else if (fail.includes(date)) {
+                // Was X -> clear
+                return {
+                  ...h,
+                  failedDates: fail.filter(d => d !== date)
+                };
+              } else {
+                // Was none -> move to check
+                return {
+                  ...h,
+                  completedDates: [...comp, date]
+                };
+              }
+            }
+            return h;
+          })
         })),
 
       deleteHabit: (id) =>
@@ -260,6 +293,18 @@ export const useAppStore = create<AppState & AppActions>()(
           return { habits: updatedHabits };
         });
       },
+
+      addHabitCategory: (name) => 
+        set((state) => ({ 
+          habitCategories: [...state.habitCategories, name] 
+        })),
+
+      deleteHabitCategory: (name) =>
+        set((state) => ({
+          habitCategories: state.habitCategories.filter(c => c !== name),
+          // Optional: move habits in this category to first available or 'Geral'
+          habits: state.habits.map(h => h.category === name ? { ...h, category: state.habitCategories[0] || 'Geral' } : h)
+        })),
 
       addHabitTemplate: (name) =>
         set((state) => ({

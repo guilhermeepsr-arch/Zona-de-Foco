@@ -65,6 +65,8 @@ export interface Habit {
   icon?: string;
   motivation?: string;
   completedDates: string[]; // ISO date strings (yyyy-MM-dd)
+  failedDates?: string[]; // ISO date strings (yyyy-MM-dd)
+  category?: string;
   order: number;
 }
 
@@ -98,6 +100,7 @@ export interface AppState {
   tasks: Task[];
   goals: Goal[];
   habits: Habit[];
+  habitCategories: string[];
   lists: List[];
   diaryEntries: DiaryEntry[];
   diaryTemplates: DiaryTemplate[];
@@ -132,11 +135,14 @@ export interface AppActions {
   updateGoal: (id: string, data: Partial<Goal>) => void;
 
   // Habits
-  addHabit: (habit: Omit<Habit, 'id' | 'order' | 'completedDates'>) => void;
+  addHabit: (habit: Omit<Habit, 'id' | 'order' | 'completedDates' | 'failedDates'>) => void;
   toggleHabit: (id: string, date?: string) => void;
+  cycleHabitStatus: (id: string, date: string) => void;
   deleteHabit: (id: string) => void;
   updateHabit: (id: string, data: Partial<Habit>) => void;
   reorderHabits: (habits: Habit[]) => void;
+  addHabitCategory: (name: string) => void;
+  deleteHabitCategory: (name: string) => void;
   addHabitTemplate: (name: string) => void;
   deleteHabitTemplate: (index: number) => void;
 
