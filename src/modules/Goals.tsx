@@ -1,746 +1,594 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
 import React, { useState, useMemo } from 'react';
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell } from 'recharts';
 import { motion } from 'motion/react';
-import { differenceInDays, parseISO, startOfDay, format, isSameDay, isToday } from 'date-fns';
+import { 
+  parseISO, 
+  startOfWeek, 
+  isSameWeek, 
+  endOfWeek, 
+  eachDayOfInterval, 
+  format, 
+  subWeeks, 
+  isSameDay, 
+  startOfMonth, 
+  endOfMonth, 
+  isToday,
+  subDays,
+  addWeeks
+} from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { ResponsiveContainer, BarChart, Bar, XAxis, Tooltip, Cell } from 'recharts';
 import { useAppStore } from '../store/useAppStore';
-import { Card, Button, Modal, ProgressBar, cn } from '../components/UI';
-import { Plus, Trash2, Undo2, TrendingUp, AlertCircle, CheckCircle2, ArrowLeft, Edit2, History, Target, Calendar, Clock, ChevronLeft, Archive } from 'lucide-react';
-import { Goal, GoalEntry, GoalTarget } from '../types';
+import { Modal, Button, cn } from '../components/UI';
+import { 
+  Plus, 
+  Settings2, 
+  Target as TargetIcon, 
+  ChevronRight, 
+  ChevronLeft,
+  Trash2,
+  RefreshCcw,
+  LayoutGrid,
+  TrendingUp,
+  Calendar as CalendarIcon
+} from 'lucide-react';
+import { Goal, GoalType } from '../types';
 
-export default function Goals({ onBack }: { onBack: () => void }) {
-  const { goals, addGoal, addGoalEntry, undoLastGoalEntry, deleteGoal, updateGoal } = useAppStore();
-  const [isModalOpen, setIsModalOpen] = useState(false);
+export default function Goals() {
+  const { goals, addGoal, addGoalEntry, clearGoalEntries, deleteGoal, updateGoal } = useAppStore();
+  const [isNewGoalModalOpen, setIsNewGoalModalOpen] = useState(false);
+  const [isEditGoalModalOpen, setIsEditGoalModalOpen] = useState(false);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
-  const [isTargetModalOpen, setIsTargetModalOpen] = useState(false);
 
-  // New Goal Form
-  const [name, setName] = useState('');
-  const [unit, setUnit] = useState('');
-  const [quickButtonsText, setQuickButtonsText] = useState('');
-
-  // New Target Form
-  const [targetValue, setTargetValue] = useState('');
-  const [targetEndDate, setTargetEndDate] = useState('');
-
-  const selectedGoal = useMemo(() => {
-    return goals.find((g) => g.id === selectedGoalId);
-  }, [goals, selectedGoalId]);
-
-  const handleAddGoal = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name || !unit) return;
-
-    // Parse quick buttons
-    const quickButtons = quickButtonsText
-      ? quickButtonsText.split(',').map(s => parseFloat(s.trim())).filter(n => !isNaN(n))
-      : undefined;
-
-    addGoal({
-      name,
-      unit,
-      quickButtons
-    });
-    setName('');
-    setUnit('');
-    setQuickButtonsText('');
-    setIsModalOpen(false);
-  };
-
-  const handleSetTarget = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedGoal || !targetValue || !targetEndDate) return;
-
-    // If starting a new cycle, we move current state to history
-    const isNewCycle = !!selectedGoal.currentTarget;
-    
-    if (isNewCycle) {
-      const historyEntry = {
-        target: selectedGoal.currentTarget!,
-        entries: [...selectedGoal.entries]
-      };
-      updateGoal(selectedGoal.id, {
-        currentTarget: {
-          id: Date.now().toString(),
-          value: parseFloat(targetValue),
-          endDate: targetEndDate,
-          startDate: new Date().toISOString()
-        },
-        entries: [], // Reset entries for new cycle
-        history: [...(selectedGoal.history || []), historyEntry]
-      });
-    } else {
-      updateGoal(selectedGoal.id, {
-        currentTarget: {
-          id: Date.now().toString(),
-          value: parseFloat(targetValue),
-          endDate: targetEndDate,
-          startDate: new Date().toISOString()
-        }
-      });
-    }
-
-    setTargetValue('');
-    setTargetEndDate('');
-    setIsTargetModalOpen(false);
-  };
+  const selectedGoal = useMemo(() => goals.find(g => g.id === selectedGoalId), [goals, selectedGoalId]);
 
   return (
-    <div className="pb-32 bg-[#f8f8f8] min-h-screen">
-      <header className="px-6 pt-10 mb-6 flex items-center justify-between">
+    <div className="pb-32 bg-[#f8f8f8] min-h-screen text-zinc-900 font-sans">
+      <header className="px-6 pt-10 mb-8 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Target className="w-5 h-5 text-red-600" />
-          <h1 className="text-xl font-black text-zinc-900 uppercase tracking-tighter">Metas</h1>
+          <TargetIcon className="w-5 h-5 text-red-600" />
+          <h1 className="text-lg font-black text-zinc-900 uppercase tracking-tighter">Metas & Progresso</h1>
         </div>
-        <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Hoje</span>
       </header>
 
-      <div className="px-6 space-y-3 pb-24">
+      <div className="px-6 space-y-3">
         {goals.length === 0 ? (
-          <div className="text-center py-16 bg-white rounded-2xl border border-zinc-200 shadow-sm">
-            <p className="text-zinc-500 font-bold uppercase tracking-widest mb-1">Sem metas criadas</p>
-            <p className="text-[9px] text-zinc-400 font-semibold uppercase tracking-widest">Clique no + para começar</p>
+          <div className="py-20 text-center border-2 border-dashed border-zinc-100 rounded-3xl bg-white">
+            <LayoutGrid className="w-10 h-10 text-zinc-200 mx-auto mb-4" />
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-300">Nenhuma meta ativa</p>
+            <button 
+              onClick={() => setIsNewGoalModalOpen(true)}
+              className="mt-4 text-[11px] font-black text-red-500 uppercase tracking-widest transition-all hover:scale-110"
+            >
+              Criar Primeira Meta
+            </button>
           </div>
         ) : (
           goals.map(goal => (
-            <div key={goal.id}>
-              <GoalCard 
-                goal={goal} 
-                onAdd={(val) => addGoalEntry(goal.id, val)}
-                onClick={() => setSelectedGoalId(goal.id)}
-              />
-            </div>
+            <GoalCard 
+              key={goal.id} 
+              goal={goal} 
+              onAdd={(val) => addGoalEntry(goal.id, val)}
+              onClick={() => {
+                setSelectedGoalId(goal.id);
+                setIsDetailModalOpen(true);
+              }}
+              onSettings={() => {
+                setSelectedGoalId(goal.id);
+                setIsEditGoalModalOpen(true);
+              }}
+            />
           ))
         )}
       </div>
 
-      {/* FAB - Botão Flutuante conforme imagem */}
-      <button 
-        onClick={() => setIsModalOpen(true)}
-        className="fixed bottom-8 right-6 w-16 h-16 bg-[#FF3B30] rounded-full flex items-center justify-center text-white shadow-2xl shadow-red-600/30 active:scale-90 transition-transform z-40 border-4 border-white/20"
-      >
-        <Plus className="w-8 h-8 stroke-[3]" />
-      </button>
-
-      {/* Create Goal Modal */}
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Nova Meta/Contador">
-        <form onSubmit={handleAddGoal} className="space-y-4">
-          <div>
-            <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2 ml-1">Nome</label>
-            <input
-              type="text"
-              required
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Ex: Flexões, Copos d'água"
-              className="w-full bg-zinc-100 border-none text-zinc-900 rounded-xl px-5 py-3 text-sm font-bold shadow-inner focus:ring-2 focus:ring-red-600"
-            />
-          </div>
-          <div>
-            <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2 ml-1">Unidade / Métrica</label>
-            <input
-              type="text"
-              required
-              value={unit}
-              onChange={(e) => setUnit(e.target.value)}
-              placeholder="Ex: reps, litros, km, páginas"
-              className="w-full bg-zinc-100 border-none text-zinc-900 rounded-xl px-5 py-3 text-sm font-bold shadow-inner focus:ring-2 focus:ring-red-600"
-            />
-          </div>
-          <div>
-            <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2 ml-1">Botões Rápidos (Separados por vírgula)</label>
-            <input
-              type="text"
-              value={quickButtonsText}
-              onChange={(e) => setQuickButtonsText(e.target.value)}
-              placeholder="Ex: 5, 10, 25"
-              className="w-full bg-zinc-100 border-none text-zinc-900 rounded-xl px-5 py-3 text-sm font-bold shadow-inner focus:ring-2 focus:ring-red-600"
-            />
-          </div>
-          <Button type="submit" className="w-full py-4 text-xs font-bold uppercase tracking-widest">Criar Meta</Button>
-        </form>
-      </Modal>
-
-      {/* Goal Detail Sheet */}
-      {selectedGoal && (
-        <Modal 
-          isOpen={!!selectedGoalId} 
-          onClose={() => setSelectedGoalId(null)} 
-          title={selectedGoal.name}
-          hideHeader
+      {/* FAB */}
+      <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50">
+        <button
+          onClick={() => setIsNewGoalModalOpen(true)}
+          className="w-14 h-14 bg-zinc-900 text-white rounded-full flex items-center justify-center shadow-2xl active:scale-90 transition-all border-4 border-[#f8f8f8]"
         >
-          <GoalPane 
-            goal={selectedGoal} 
-            onClose={() => setSelectedGoalId(null)}
-            onSetTarget={() => setIsTargetModalOpen(true)}
-          />
-        </Modal>
-      )}
+          <Plus className="w-7 h-7 stroke-[3]" />
+        </button>
+      </div>
 
-      {/* Target Setup Modal */}
-      <Modal 
-        isOpen={isTargetModalOpen} 
-        onClose={() => setIsTargetModalOpen(false)} 
-        title={selectedGoal?.currentTarget ? "Novo Ciclo de Alvo" : "Definir Alvo"}
-      >
-        <form onSubmit={handleSetTarget} className="space-y-5">
-          <p className="text-[10px] text-zinc-500 font-semibold leading-relaxed px-1">
-            {selectedGoal?.currentTarget 
-              ? "Ao definir um novo alvo, o progresso atual será arquivado no histórico e um novo ciclo começará." 
-              : "Defina um objetivo numérico e uma data limite para acompanhar seu ritmo."}
-          </p>
-          <div>
-            <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2 ml-1">Quantidade do Alvo</label>
-            <input
-              type="number"
-              required
-              value={targetValue}
-              onChange={(e) => setTargetValue(e.target.value)}
-              className="w-full bg-zinc-100 border-none text-zinc-900 rounded-xl px-5 py-3 text-sm font-bold shadow-inner focus:ring-2 focus:ring-red-600"
-              placeholder="Ex: 500"
-            />
-          </div>
-          <div>
-            <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2 ml-1">Data Final</label>
-            <input
-              type="date"
-              required
-              value={targetEndDate}
-              onChange={(e) => setTargetEndDate(e.target.value)}
-              className="w-full bg-zinc-100 border-none text-zinc-900 rounded-xl px-5 py-3 text-sm font-bold shadow-inner focus:ring-2 focus:ring-red-600"
-            />
-          </div>
-          <Button type="submit" className="w-full py-4 text-xs font-bold uppercase tracking-widest">
-            {selectedGoal?.currentTarget ? "Iniciar Novo Ciclo" : "Confirmar Alvo"}
-          </Button>
-        </form>
-      </Modal>
+      {/* Modals */}
+      <NewGoalModal 
+        isOpen={isNewGoalModalOpen} 
+        onClose={() => setIsNewGoalModalOpen(false)} 
+        onAdd={addGoal}
+      />
+
+      {selectedGoal && (
+        <>
+          <GoalDetailModal
+            isOpen={isDetailModalOpen}
+            goal={selectedGoal}
+            onClose={() => setIsDetailModalOpen(false)}
+            onSettings={() => {
+              setIsDetailModalOpen(false);
+              setIsEditGoalModalOpen(true);
+            }}
+          />
+          <EditGoalModal
+            isOpen={isEditGoalModalOpen}
+            goal={selectedGoal}
+            onClose={() => setIsEditGoalModalOpen(false)}
+            onUpdate={updateGoal}
+            onDelete={deleteGoal}
+            onReset={clearGoalEntries}
+          />
+        </>
+      )}
     </div>
   );
 }
 
-interface GoalCardProps {
-  goal: Goal;
-  onAdd: (val: number) => void;
-  onClick: () => void;
-}
+const GoalCard: React.FC<{ goal: Goal; onAdd: (v: number) => void; onClick: () => void; onSettings: () => void }> = ({ goal, onAdd, onClick, onSettings }) => {
+  const [inputValue, setInputValue] = useState('');
+  
+  const stats = useMemo(() => calculateGoalStats(goal), [goal]);
 
-function GoalCard({ goal, onAdd, onClick }: GoalCardProps) {
-  const total = (goal.entries || []).reduce((acc, e) => acc + e.value, 0);
-  const todayTotal = (goal.entries || [])
-    .filter(e => isToday(parseISO(e.date)))
-    .reduce((acc, e) => acc + e.value, 0);
-
-  const stats = useMemo(() => {
-    if (!goal.currentTarget) return null;
-    const now = new Date();
-    const start = parseISO(goal.currentTarget.startDate);
-    const end = parseISO(goal.currentTarget.endDate);
-    
-    const daysTotal = Math.max(1, differenceInDays(end, start));
-    const daysRemaining = Math.max(0, differenceInDays(end, now));
-    const daysPassed = Math.max(1, differenceInDays(now, start));
-
-    const totalTarget = goal.currentTarget.value;
-    const progressPerc = (total / totalTarget) * 100;
-    
-    const idealAccumulated = (totalTarget / daysTotal) * daysPassed;
-    const isAhead = total >= idealAccumulated;
-    const diff = total - idealAccumulated;
-
-    const requiredPerDay = daysRemaining > 0 ? Math.max(0, (totalTarget - total) / daysRemaining) : 0;
-
-    return {
-      daysRemaining,
-      progressPerc,
-      isAhead,
-      diff,
-      requiredPerDay,
-      targetValue: totalTarget
-    };
-  }, [goal, total]);
-
-  const increments = useMemo(() => {
-    if (goal.quickButtons && goal.quickButtons.length > 0) return goal.quickButtons;
-    const u = goal.unit.toLowerCase();
-    if (u.includes('ml')) return [200, 300, 500];
-    return [5, 10, 25];
-  }, [goal]);
+  const handleAction = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const val = parseFloat(inputValue);
+    if (!isNaN(val)) {
+      onAdd(val);
+      setInputValue('');
+    }
+  };
 
   return (
-    <div 
-      className="p-5 bg-white border border-zinc-200 rounded-2xl shadow-sm transition-all active:scale-[0.99] group"
+    <motion.div 
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
       onClick={onClick}
+      className="bg-white rounded-2xl p-3 shadow-sm border border-zinc-100 flex items-center gap-3 cursor-pointer hover:border-red-100 transition-all group"
     >
-      <div className="flex justify-between items-start mb-0.5">
-        <div className="flex items-center">
-          <h3 className="text-lg font-medium text-zinc-900 tracking-tight">{goal.name}</h3>
-        </div>
-        <div className="text-right">
-          <div className="relative inline-block">
-            <p className="text-3xl font-black text-[#FF3B30] leading-none drop-shadow-[0_0_10px_rgba(255,59,48,0.2)]">{todayTotal}</p>
-          </div>
-          <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest mt-1">hoje</p>
-        </div>
+      {/* Icon */}
+      <div className="w-10 h-10 bg-zinc-50 rounded-xl flex items-center justify-center text-xl shrink-0 transition-transform group-hover:scale-105">
+        {goal.icon || '🎯'}
       </div>
 
-      <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-[0.1em] mb-2 -mt-1.5">{goal.unit}</p>
-
-      <div className="mb-2">
-        <p className="text-[12px] font-medium text-zinc-500">Total: <span className="text-zinc-900 font-black">{total}</span> <span className="lowercase">{goal.unit}</span></p>
-      </div>
-
-      {stats && (
-        <div className="mb-4">
-          <div className="flex justify-between items-end mb-1.5">
-            <span className="text-[11px] font-medium text-zinc-400">Meta: {total}/{stats.targetValue}</span>
-            <span className={cn(
-              "text-[9px] font-medium opacity-80",
-              stats.isAhead ? "text-emerald-600" : "text-amber-600"
-            )}>
-              {stats.isAhead ? "adiantado" : "em atraso"}
-            </span>
-          </div>
-          <div className="h-[3px] w-full bg-zinc-100 rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-red-600 rounded-full transition-all duration-700 ease-out" 
-              style={{ width: `${Math.min(100, stats.progressPerc)}%` }}
-            />
-          </div>
-          <p className="text-[10px] font-medium text-zinc-400 mt-2.5">
-            {stats.daysRemaining}d restantes · {stats.requiredPerDay === 0 ? '-' : ''}{stats.requiredPerDay.toFixed(1)}/{goal.unit}/dia necessário
+      {/* Info */}
+      <div className="flex-1 min-w-0">
+        <h3 className="text-[10px] font-black uppercase tracking-wider text-zinc-900 truncate mb-0.5">
+          {goal.name}
+        </h3>
+        <div className="flex flex-col gap-0">
+          <p className="text-[10px] font-black text-zinc-300 uppercase tracking-widest flex items-center gap-1.5 leading-none">
+            <span className="text-zinc-900">{stats.displayValue}</span>
+            <span className="text-[8px]">/ {goal.target || '-'} {goal.unit}</span>
           </p>
+          {stats.secondaryInfo && (
+            <p className="text-[7px] font-black text-emerald-600 uppercase tracking-tighter mt-1">
+              {stats.secondaryInfo}
+            </p>
+          )}
         </div>
-      )}
+      </div>
 
-      <div className="flex gap-2.5 mt-2">
-        {increments.slice(0, 3).map(val => (
-          <button
-            key={val}
-            onClick={(e) => {
-              e.stopPropagation();
-              onAdd(val);
-            }}
-            className="flex-1 py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-900 font-bold text-sm rounded-xl border border-zinc-200 transition-all active:scale-90"
-          >
-            +{val}
-          </button>
-        ))}
+      {/* Action Area */}
+      <div className="flex items-center gap-1.5" onClick={e => e.stopPropagation()}>
+        <input 
+          type="number"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          placeholder="0"
+          className="w-12 h-9 bg-zinc-100 border-none rounded-xl text-center text-xs font-black text-zinc-900 focus:ring-1 focus:ring-red-500 shadow-inner [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+        />
         <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onClick();
-          }}
-          className="w-14 items-center justify-center bg-zinc-100 hover:bg-zinc-200 text-zinc-900 rounded-xl border border-zinc-200 transition-all active:scale-90 hidden sm:flex"
+          onClick={handleAction}
+          className="h-9 px-3 bg-zinc-900 text-white text-[8px] font-black uppercase tracking-widest rounded-xl transition-all active:scale-95 shadow-sm"
         >
-          <Plus className="w-5 h-5 text-zinc-400" />
-        </button>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onClick();
-          }}
-          className="flex-1 items-center justify-center bg-zinc-100 hover:bg-zinc-200 text-zinc-900 rounded-xl border border-zinc-200 transition-all active:scale-90 flex sm:hidden"
-        >
-          <Plus className="w-5 h-5 text-zinc-400" />
+          {goal.type === 'cumulative' ? 'Add' : 'Set'}
         </button>
       </div>
-    </div>
+    </motion.div>
   );
+};
+
+function calculateGoalStats(goal: Goal) {
+  const entries = goal.entries || [];
+  
+  if (goal.type === 'cumulative') {
+    const total = entries.reduce((acc, e) => acc + e.value, 0);
+    return {
+      displayValue: total.toLocaleString(),
+      secondaryInfo: null
+    };
+  } else {
+    const now = new Date();
+    const currentWeekEntries = entries.filter(e => isSameWeek(parseISO(e.date), now, { weekStartsOn: 1 }));
+    const lastWeekEntries = entries.filter(e => isSameWeek(parseISO(e.date), subWeeks(now, 1), { weekStartsOn: 1 }));
+    
+    const currentAvg = currentWeekEntries.length > 0 
+      ? currentWeekEntries.reduce((acc, e) => acc + e.value, 0) / currentWeekEntries.length 
+      : (entries.length > 0 ? entries[entries.length - 1].value : goal.initialValue || 0);
+      
+    const lastAvg = lastWeekEntries.length > 0
+      ? lastWeekEntries.reduce((acc, e) => acc + e.value, 0) / lastWeekEntries.length
+      : goal.initialValue || 0;
+
+    const diffWeek = currentAvg - lastAvg;
+    const diffStart = currentAvg - (goal.initialValue || 0);
+
+    const progressText = `Sem: ${diffWeek >= 0 ? '+' : ''}${diffWeek.toFixed(1)} | Tot: ${diffStart >= 0 ? '+' : ''}${diffStart.toFixed(1)}`;
+
+    return {
+      displayValue: currentAvg.toFixed(1),
+      secondaryInfo: progressText
+    };
+  }
 }
 
-function GoalPane({ goal, onClose, onSetTarget }: { goal: Goal; onClose: () => void; onSetTarget: () => void }) {
-  const { addGoalEntry, undoLastGoalEntry, deleteGoal, updateGoal } = useAppStore();
-  const [addValue, setAddValue] = useState('');
-  const [isEditing, setIsEditing] = useState(false);
-  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
-  const [showManualInput, setShowManualInput] = useState(false);
-  const [editName, setEditName] = useState(goal.name);
-  const [editUnit, setEditUnit] = useState(goal.unit);
-  const [editQuickButtonsText, setEditQuickButtonsText] = useState(goal.quickButtons?.join(', ') || '');
+function GoalDetailModal({ goal, isOpen, onClose, onSettings }: { goal: Goal; isOpen: boolean; onClose: () => void; onSettings: () => void }) {
+  const today = new Date();
+  const [currentMonth, setCurrentMonth] = useState(startOfMonth(today));
 
-  const total = useMemo(() => (goal.entries || []).reduce((acc, e) => acc + e.value, 0), [goal.entries]);
-  const todayTotal = useMemo(() => (goal.entries || [])
-    .filter(e => isToday(parseISO(e.date)))
-    .reduce((acc, e) => acc + e.value, 0), [goal.entries]);
-  
-  const chartData = useMemo(() => {
+  const daysInMonth = useMemo(() => {
+    const start = startOfMonth(currentMonth);
+    const end = endOfMonth(currentMonth);
+    return eachDayOfInterval({ start, end });
+  }, [currentMonth]);
+
+  const weeklyData = useMemo(() => {
     const data = [];
-    const days = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+    const days = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
     for (let i = 6; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      const isTodayBar = isToday(d);
-      const dayTotal = (goal.entries || [])
-        .filter(e => isSameDay(parseISO(e.date), d))
-        .reduce((acc, e) => acc + e.value, 0);
+      const d = subDays(today, i);
+      const dayEntries = goal.entries.filter(e => isSameDay(parseISO(e.date), d));
+      const value = goal.type === 'cumulative'
+        ? dayEntries.reduce((acc, e) => acc + e.value, 0)
+        : (dayEntries.length > 0 ? dayEntries[dayEntries.length - 1].value : 0);
       
-      data.push({ 
-        name: days[d.getDay()], 
-        value: dayTotal,
-        isToday: isTodayBar
+      data.push({
+        name: days[d.getDay()],
+        value,
+        fullDate: format(d, 'dd/MM')
       });
     }
     return data;
-  }, [goal.entries]);
+  }, [goal]);
 
-  const stats = useMemo(() => {
-    if (!goal.currentTarget) return null;
-    const now = new Date();
-    const start = parseISO(goal.currentTarget.startDate);
-    const end = parseISO(goal.currentTarget.endDate);
-    
-    const daysTotal = Math.max(1, differenceInDays(end, start));
-    const daysRemaining = Math.max(0, differenceInDays(end, now));
-    const daysPassed = Math.max(1, differenceInDays(now, start));
-
-    const totalTarget = goal.currentTarget.value;
-    const progressPerc = Math.round((total / totalTarget) * 100);
-    
-    const idealAccumulated = (totalTarget / daysTotal) * daysPassed;
-    const isAhead = total >= idealAccumulated;
-    const diff = total - idealAccumulated;
-
-    const requiredPerDay = daysRemaining > 0 ? Math.max(0, (totalTarget - total) / daysRemaining) : 0;
-    const currentAverage = total / daysPassed;
-
-    return {
-      daysRemaining,
-      progressPerc,
-      isAhead,
-      diff,
-      requiredPerDay,
-      currentAverage,
-      targetValue: totalTarget
-    };
-  }, [goal, total]);
-
-  const handleAddValue = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!addValue || isNaN(parseFloat(addValue))) return;
-    addGoalEntry(goal.id, parseFloat(addValue));
-    setAddValue('');
-    setShowManualInput(false);
+  const getDayTotal = (day: Date) => {
+    const dayEntries = goal.entries.filter(e => isSameDay(parseISO(e.date), day));
+    if (goal.type === 'cumulative') {
+      const sum = dayEntries.reduce((acc, e) => acc + e.value, 0);
+      return sum > 0 ? sum : null;
+    } else {
+      return dayEntries.length > 0 ? dayEntries[dayEntries.length - 1].value : null;
+    }
   };
-
-  const handleSaveEdit = () => {
-    const quickButtons = editQuickButtonsText
-      ? editQuickButtonsText.split(',').map(s => parseFloat(s.trim())).filter(n => !isNaN(n))
-      : undefined;
-
-    updateGoal(goal.id, { 
-      name: editName,
-      unit: editUnit,
-      quickButtons
-    });
-    setIsEditing(false);
-  };
-
-  const quickButtons = useMemo(() => {
-    if (goal.quickButtons && goal.quickButtons.length > 0) return goal.quickButtons;
-    return [5, 10, 25];
-  }, [goal.quickButtons]);
 
   return (
-    <div className="space-y-4 pb-16 px-1">
-      {/* Header */}
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-2">
-          <button onClick={onClose} className="p-2 -ml-2 text-zinc-900">
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-          {isEditing ? (
-            <div className="flex-1 space-y-2">
-              <input 
-                autoFocus
-                value={editName}
-                onChange={(e) => setEditName(e.target.value)}
-                className="bg-zinc-100 border-none text-zinc-900 font-bold uppercase text-xs px-2 py-1.5 rounded-lg w-full"
-              />
-              <input 
-                value={editUnit}
-                onChange={(e) => setEditUnit(e.target.value)}
-                className="bg-zinc-100 border-none text-zinc-500 font-bold text-[10px] px-2 py-1.5 rounded-lg w-full"
-              />
+    <Modal isOpen={isOpen} onClose={onClose} title={goal.name}>
+      <div className="space-y-6 max-h-[75vh] overflow-y-auto no-scrollbar pt-2">
+        
+        {/* Weekly Chart */}
+        <section>
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="text-[8px] font-black uppercase tracking-[0.2em] text-zinc-400 flex items-center gap-1.5">
+              <TrendingUp className="w-3 h-3" /> Últimos 7 dias
+            </h4>
+          </div>
+          <div className="h-32 w-full bg-zinc-50 rounded-xl p-3 border border-zinc-100">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={weeklyData}>
+                <Bar dataKey="value" radius={[2, 2, 0, 0]}>
+                  {weeklyData.map((entry, index) => (
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={entry.value > 0 ? '#ef4444' : '#e4e4e7'} 
+                    />
+                  ))}
+                </Bar>
+                <XAxis 
+                  dataKey="name" 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fontSize: 8, fontWeight: 900, fill: '#A1A1AA' }}
+                />
+                <Tooltip 
+                  cursor={{ fill: 'transparent' }}
+                  content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      return (
+                        <div className="bg-zinc-900 text-white px-2 py-1 rounded text-[9px] font-black">
+                          {payload[0].value} {goal.unit}
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </section>
+
+        {/* Monthly Calendar */}
+        <section>
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="text-[8px] font-black uppercase tracking-[0.2em] text-zinc-400 flex items-center gap-1.5">
+              <CalendarIcon className="w-3 h-3" /> Histórico
+            </h4>
+            <div className="flex items-center gap-2">
               <button 
-                onClick={handleSaveEdit}
-                className="w-full bg-zinc-900 text-white text-[10px] font-black uppercase py-2 rounded-lg"
+                onClick={() => setCurrentMonth(prev => subWeeks(prev, 4))}
+                className="w-5 h-5 flex items-center justify-center bg-white border border-zinc-100 rounded-lg text-zinc-400"
               >
-                Salvar
+                <ChevronLeft className="w-2.5 h-2.5" />
+              </button>
+              <span className="text-[8px] font-black uppercase tracking-widest text-zinc-900 w-20 text-center">
+                {format(currentMonth, 'MMM yy', { locale: ptBR })}
+              </span>
+              <button 
+                onClick={() => setCurrentMonth(prev => addWeeks(prev, 4))}
+                className="w-5 h-5 flex items-center justify-center bg-white border border-zinc-100 rounded-lg text-zinc-400"
+              >
+                <ChevronRight className="w-2.5 h-2.5" />
               </button>
             </div>
-          ) : (
-            <div className="pt-1">
-              <h2 className="text-lg font-medium text-zinc-900 tracking-tight leading-none uppercase">{goal.name}</h2>
-              <p className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">{goal.unit}</p>
-            </div>
-          )}
-        </div>
-        <div className="flex items-center gap-1">
-          {!isEditing && (
-            <>
-              <button onClick={() => setIsEditing(true)} className="p-2 text-zinc-600 hover:text-white transition-colors">
-                <Edit2 className="w-4 h-4" />
-              </button>
-              <button 
-                onClick={() => {
-                  if (isConfirmingDelete) {
-                    deleteGoal(goal.id);
-                    onClose();
-                  } else {
-                    setIsConfirmingDelete(true);
-                  }
-                }} 
-                className={cn("p-2 transition-colors", isConfirmingDelete ? "text-red-500" : "text-zinc-600 hover:text-red-500")}
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </>
-          )}
-        </div>
-      </div>
+          </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-2 gap-3">
-        <div className="bg-white border border-zinc-200 rounded-2xl p-5 py-8 flex flex-col items-center justify-center text-center shadow-sm">
-          <p className="text-4xl font-black text-[#FF3B30] leading-none mb-2 drop-shadow-[0_0_15px_rgba(255,59,48,0.1)]">{todayTotal}</p>
-          <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">HOJE</p>
-        </div>
-        <div className="bg-white border border-zinc-200 rounded-2xl p-5 py-8 flex flex-col items-center justify-center text-center shadow-sm">
-          <p className="text-4xl font-black text-zinc-900 leading-none mb-2">{total}</p>
-          <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">TOTAL</p>
-        </div>
-      </div>
-
-      {/* Add Row */}
-      <div className="space-y-4">
-        <div className="grid grid-cols-4 gap-2.5">
-          {quickButtons.map(val => (
-            <button
-              key={val}
-              onClick={() => addGoalEntry(goal.id, val)}
-              className="bg-zinc-100 hover:bg-zinc-200 text-zinc-900 font-bold py-3 rounded-xl shadow-sm border border-zinc-200 transition-all active:scale-95"
-            >
-              +{val}
-            </button>
-          ))}
-          <button
-            onClick={() => setShowManualInput(!showManualInput)}
-            className="bg-zinc-100 hover:bg-zinc-200 text-zinc-400 font-bold py-3 rounded-xl shadow-sm border border-zinc-200 transition-all active:scale-95"
-          >
-            +?
-          </button>
-        </div>
-
-        {showManualInput && (
-          <form onSubmit={handleAddValue} className="animate-in fade-in slide-in-from-top-2 duration-300">
-            <div className="flex gap-2 bg-zinc-100 p-2 rounded-xl border border-zinc-200 shadow-inner">
-              <input 
-                autoFocus
-                type="number"
-                value={addValue}
-                onChange={(e) => setAddValue(e.target.value)}
-                placeholder={`Mais ${goal.unit}...`}
-                className="flex-1 bg-transparent border-none text-zinc-900 px-3 py-2 text-sm font-bold focus:ring-0"
-              />
-              <button 
-                type="submit"
-                className="p-2 bg-red-600 text-white rounded-lg active:scale-90 transition-transform"
-              >
-                <Plus className="w-5 h-5" />
-              </button>
-            </div>
-          </form>
-        )}
+          <div className="grid grid-cols-7 gap-1">
+            {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map(d => (
+              <div key={d} className="text-center text-[7px] font-black text-zinc-300 py-0.5 uppercase">{d}</div>
+            ))}
+            {daysInMonth.map((day) => {
+              const total = getDayTotal(day);
+              const isTodayDay = isToday(day);
+              
+              return (
+                <div 
+                  key={day.toISOString()}
+                  className={cn(
+                    "aspect-square rounded-lg border border-zinc-100/50 flex flex-col items-center justify-center gap-0.5 transition-all",
+                    isTodayDay ? "border-red-500 bg-red-50/20" : "bg-white",
+                    total ? "bg-red-50" : ""
+                  )}
+                >
+                  <span className={cn(
+                    "text-[6px] font-black",
+                    isTodayDay ? "text-red-600" : "text-zinc-200"
+                  )}>
+                    {format(day, 'd')}
+                  </span>
+                  {total !== null && (
+                    <span className="text-[7px] font-black text-zinc-900 leading-none">
+                      {total}
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </section>
 
         <button 
-          onClick={undoLastGoalEntry}
-          className="flex items-center gap-2 text-zinc-500 hover:text-white text-[13px] font-medium transition-colors ml-1"
+          onClick={onSettings}
+          className="w-full py-3 bg-zinc-50 border border-zinc-100 text-zinc-400 hover:text-zinc-900 rounded-xl text-[8px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2"
         >
-          <Undo2 className="w-4 h-4 -scale-x-100" /> Desfazer última entrada
+          <Settings2 className="w-3 h-3" /> Preferências
         </button>
       </div>
+    </Modal>
+  );
+}
 
-      {/* Meta Ativa Section */}
-      <div className="bg-white border border-zinc-200 rounded-2xl p-6 shadow-sm relative overflow-hidden">
-        <div className="flex items-center justify-between mb-5">
-           <div className="flex items-center gap-2.5">
-             <div className="w-5 h-5 rounded-full border-2 border-red-600 flex items-center justify-center">
-               <div className="w-1.5 h-1.5 bg-red-600 rounded-full" />
-             </div>
-             <span className="text-[13px] font-bold text-zinc-900">Meta Ativa</span>
-           </div>
-           {stats && (
-              <span className={cn(
-                "text-[9px] font-medium opacity-80",
-                stats.isAhead ? "text-emerald-600" : "text-amber-600"
-              )}>
-                {stats.isAhead ? "adiantado" : "em atraso"}
-              </span>
-           )}
+function NewGoalModal({ isOpen, onClose, onAdd }: { isOpen: boolean; onClose: () => void; onAdd: (g: any) => void }) {
+  const [name, setName] = useState('');
+  const [icon, setIcon] = useState('🎯');
+  const [unit, setUnit] = useState('');
+  const [type, setType] = useState<GoalType>('cumulative');
+  const [target, setTarget] = useState('');
+  const [initialValue, setInitialValue] = useState('');
+  const [direction, setDirection] = useState<'up' | 'down'>('up');
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name || !unit) return;
+
+    onAdd({
+      name,
+      icon,
+      unit,
+      type,
+      target: target ? parseFloat(target) : undefined,
+      initialValue: initialValue ? parseFloat(initialValue) : undefined,
+      direction,
+      entries: []
+    });
+
+    setName('');
+    setIcon('🎯');
+    setUnit('');
+    setTarget('');
+    setInitialValue('');
+    onClose();
+  };
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title="Nova Meta">
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="flex gap-3">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[8px] font-black uppercase tracking-widest text-zinc-400 ml-1">Icon</label>
+            <input 
+              type="text" 
+              value={icon} 
+              onChange={(e) => setIcon(e.target.value)}
+              className="w-10 h-10 bg-zinc-100 rounded-xl text-center text-base border-none focus:ring-1 focus:ring-red-500 shadow-inner"
+            />
+          </div>
+          <div className="flex-1 flex flex-col gap-1.5">
+            <label className="text-[8px] font-black uppercase tracking-widest text-zinc-400 ml-1">Nome</label>
+            <input 
+              type="text" 
+              required
+              value={name} 
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Ex: Peso"
+              className="w-full h-10 bg-zinc-100 border-none rounded-xl px-4 text-[10px] font-bold text-zinc-900 shadow-inner focus:ring-1 focus:ring-red-500"
+            />
+          </div>
         </div>
 
-        <div className="h-[3px] w-full bg-zinc-100 rounded-full overflow-hidden mb-6">
-          <motion.div 
-             initial={{ width: 0 }}
-             animate={{ width: `${stats ? Math.min(100, stats.progressPerc) : 0}%` }}
-             className="h-full bg-red-600"
+        <div className="grid grid-cols-2 gap-3">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[8px] font-black uppercase tracking-widest text-zinc-400 ml-1">Unidade</label>
+            <input 
+              type="text" 
+              required
+              value={unit} 
+              onChange={(e) => setUnit(e.target.value)}
+              className="w-full h-9 bg-zinc-100 border-none rounded-xl px-3 text-[9px] font-bold text-zinc-900 shadow-inner"
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[8px] font-black uppercase tracking-widest text-zinc-400 ml-1">Alvo</label>
+            <input 
+              type="number" 
+              value={target} 
+              onChange={(e) => setTarget(e.target.value)}
+              className="w-full h-9 bg-zinc-100 border-none rounded-xl px-3 text-[9px] font-bold text-zinc-900 shadow-inner"
+            />
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label className="text-[8px] font-black uppercase tracking-widest text-zinc-400 ml-1">Tipo</label>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setType('cumulative')}
+              className={cn(
+                "py-2 px-2 rounded-xl text-[7px] font-black uppercase tracking-widest border transition-all",
+                type === 'cumulative' ? "bg-zinc-900 text-white border-zinc-900" : "bg-white text-zinc-400 border-zinc-100"
+              )}
+            >
+              Acumulada
+            </button>
+            <button
+              type="button"
+              onClick={() => setType('tracking')}
+              className={cn(
+                "py-2 px-2 rounded-xl text-[7px] font-black uppercase tracking-widest border transition-all",
+                type === 'tracking' ? "bg-zinc-900 text-white border-zinc-900" : "bg-white text-zinc-400 border-zinc-100"
+              )}
+            >
+              Evolução
+            </button>
+          </div>
+        </div>
+
+        <Button type="submit" className="w-full py-3.5 text-[9px] font-black uppercase tracking-[0.2em] mt-2">
+           Criar Meta
+        </Button>
+      </form>
+    </Modal>
+  );
+}
+
+function EditGoalModal({ goal, isOpen, onClose, onUpdate, onDelete, onReset }: { 
+  goal: Goal; 
+  isOpen: boolean; 
+  onClose: () => void; 
+  onUpdate: (id: string, d: any) => void;
+  onDelete: (id: string) => void;
+  onReset: (id: string) => void;
+}) {
+  const [name, setName] = useState(goal.name);
+  const [icon, setIcon] = useState(goal.icon || '🎯');
+  const [unit, setUnit] = useState(goal.unit);
+  const [target, setTarget] = useState(goal.target?.toString() || '');
+  const [description, setDescription] = useState(goal.description || '');
+
+  const handleUpdate = (e: React.FormEvent) => {
+    e.preventDefault();
+    onUpdate(goal.id, {
+      name,
+      icon,
+      unit,
+      target: target ? parseFloat(target) : undefined,
+      description
+    });
+    onClose();
+  };
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title="Editar">
+      <form onSubmit={handleUpdate} className="space-y-4">
+        <div className="flex gap-3">
+          <input 
+            type="text" 
+            value={icon} 
+            onChange={(e) => setIcon(e.target.value)}
+            className="w-10 h-10 bg-zinc-100 rounded-xl text-center text-base border-none shadow-inner"
+          />
+          <input 
+            type="text" 
+            required
+            value={name} 
+            onChange={(e) => setName(e.target.value)}
+            className="flex-1 bg-zinc-100 border-none rounded-xl px-4 text-[10px] font-bold text-zinc-900 shadow-inner"
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-x-6 gap-y-8">
-           <div>
-             <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5">Progresso</p>
-             <p className="text-[14px] font-bold text-zinc-900 tracking-tight">
-               {total} / {stats?.targetValue || 0} ({stats?.progressPerc || 0}%)
-             </p>
-           </div>
-           <div>
-             <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5">Dias restantes</p>
-             <p className="text-[14px] font-bold text-zinc-900 tracking-tight">{stats?.daysRemaining || 0}</p>
-           </div>
-           <div>
-             <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5">Ritmo necessário</p>
-             <p className="text-[14px] font-bold text-zinc-900 tracking-tight">{stats?.requiredPerDay.toFixed(1) || 0} {goal.unit}/dia</p>
-           </div>
-           <div>
-             <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5">Ritmo atual</p>
-             <p className="text-[14px] font-bold text-zinc-900 tracking-tight">{stats?.currentAverage.toFixed(1) || 0} {goal.unit}/dia</p>
-           </div>
-        </div>
-
-        {stats?.isAhead && (
-          <div className="mt-8 pt-6 border-t border-zinc-100">
-            <p className="text-sm font-bold text-red-500 flex items-center gap-2">
-              +{Math.floor(stats.diff)} {goal.unit} acima da meta! 🔥
-            </p>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[8px] font-black uppercase tracking-widest text-zinc-400 ml-1">Unidade</label>
+            <input 
+              type="text" 
+              value={unit} 
+              onChange={(e) => setUnit(e.target.value)}
+              className="bg-zinc-100 border-none rounded-xl px-3 py-2 text-[9px] font-bold"
+            />
           </div>
-        )}
-      </div>
-
-      {/* Target Action */}
-      <button 
-        onClick={onSetTarget}
-        className="w-full py-4 bg-transparent border border-zinc-200 rounded-xl flex items-center justify-center gap-3 text-zinc-400 hover:text-zinc-600 hover:border-zinc-300 transition-all active:scale-[0.98]"
-      >
-        <span className="text-xl">🎯</span>
-        <span className="text-sm font-bold uppercase tracking-tight">Nova Meta (encerra atual)</span>
-      </button>
-
-      {/* Chart Section */}
-      <div className="bg-white border border-zinc-200 rounded-2xl p-6 shadow-sm">
-        <h3 className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-8">ÚLTIMOS 7 DIAS</h3>
-        <div className="h-48 w-full mt-4">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData}>
-              <Bar 
-                dataKey="value" 
-                radius={[4, 4, 0, 0]}
-              >
-                {chartData.map((entry, index) => (
-                  <Cell 
-                    key={`cell-${index}`} 
-                    fill={entry.isToday ? '#10B981' : '#F4F4F5'} 
-                  />
-                ))}
-              </Bar>
-              <XAxis 
-                dataKey="name" 
-                axisLine={false} 
-                tickLine={false} 
-                tick={{ fill: '#A1A1AA', fontSize: 10, fontWeight: 700 }}
-                dy={12}
-              />
-              <Tooltip 
-                cursor={{ fill: 'transparent' }} 
-                content={({ active, payload }) => {
-                  if (active && payload && payload.length) {
-                    return (
-                      <div className="bg-zinc-900 text-white p-2 rounded-lg shadow-2xl">
-                        <p className="text-[11px] font-bold">{payload[0].value} {goal.unit}</p>
-                      </div>
-                    );
-                  }
-                  return null;
-                }}
-              />
-            </BarChart>
-          </ResponsiveContainer>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[8px] font-black uppercase tracking-widest text-zinc-400 ml-1">Alvo</label>
+            <input 
+              type="number" 
+              value={target} 
+              onChange={(e) => setTarget(e.target.value)}
+              className="bg-zinc-100 border-none rounded-xl px-3 py-2 text-[9px] font-bold"
+            />
+          </div>
         </div>
-      </div>
 
-      {/* Records Section */}
-      <div className="space-y-4">
-        <h3 className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest ml-1">REGISTROS DE HOJE</h3>
-        <div className="space-y-0.5">
-          {goal.entries.filter(e => isToday(parseISO(e.date))).length === 0 ? (
-            <p className="text-[11px] text-zinc-400 font-bold uppercase tracking-widest py-8 text-center italic border border-dashed border-zinc-200 rounded-2xl">Sem registros hoje</p>
-          ) : (
-            [...goal.entries].filter(e => isToday(parseISO(e.date))).reverse().map((entry) => (
-              <div key={entry.id} className="flex items-center justify-between py-4 px-2 border-b border-zinc-100 last:border-0">
-                <p className="text-[13px] font-mono text-zinc-400">{format(parseISO(entry.date), "HH:mm")}</p>
-                <p className="text-lg font-bold text-red-500">+{entry.value}</p>
-              </div>
-            ))
-          )}
+        <div className="border-t border-zinc-100 pt-4 space-y-2">
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                if (confirm('Apagar registros?')) {
+                  onReset(goal.id);
+                  onClose();
+                }
+              }}
+              className="flex-1 py-2.5 bg-zinc-50 text-zinc-400 text-[7px] font-black uppercase tracking-widest border border-zinc-100 rounded-xl"
+            >
+              Reset
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                if (confirm('Excluir?')) {
+                  onDelete(goal.id);
+                  onClose();
+                }
+              }}
+              className="flex-1 py-2.5 bg-zinc-50 text-zinc-400 text-[7px] font-black uppercase tracking-widest border border-zinc-100 rounded-xl"
+            >
+              Excluir
+            </button>
+          </div>
+          <Button type="submit" className="w-full py-3.5 text-[9px] font-black uppercase tracking-widest">
+            Salvar
+          </Button>
         </div>
-      </div>
-    </div>
-  );
-}
-
-function StatItem({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <p className="text-[8px] font-bold text-zinc-700 uppercase tracking-widest mb-1">{label}</p>
-      <p className="text-xs font-bold text-white tracking-tight">{value}</p>
-    </div>
-  );
-}
-
-function StatusTag({ goal, large = false }: { goal: Goal; large?: boolean }) {
-  const total = (goal.entries || []).reduce((acc, e) => acc + e.value, 0);
-  if (!goal.currentTarget) return null;
-
-  const now = new Date();
-  const start = parseISO(goal.currentTarget.startDate);
-  const end = parseISO(goal.currentTarget.endDate);
-  const totalTarget = goal.currentTarget.value;
-  
-  const daysTotal = Math.max(1, differenceInDays(end, start));
-  const daysPassed = Math.max(1, differenceInDays(now, start));
-  
-  const idealAccumulated = (totalTarget / daysTotal) * daysPassed;
-  
-  let label = "Em dia";
-  let color = "text-yellow-600 bg-yellow-600/10 border-yellow-600/20";
-
-  if (total >= totalTarget) {
-    label = "concluído";
-    color = "text-green-500 bg-green-500/10 border-green-500/20";
-  } else if (total >= idealAccumulated * 1.15) {
-    label = "adiantado";
-    color = "text-blue-500 bg-blue-500/10 border-blue-500/20";
-  } else if (total < idealAccumulated * 0.85) {
-    label = "em atraso";
-    color = "text-red-500 bg-red-500/10 border-red-500/20";
-  } else {
-    label = "em dia";
-    color = "text-green-500 bg-green-500/10 border-green-500/20";
-  }
-
-  return (
-    <span className={cn(
-      "font-bold uppercase tracking-widest rounded-lg border",
-      large ? "px-3 py-1.5 text-[9px]" : "px-2 py-0.5 text-[7px]",
-      color
-    )}>
-      {label}
-    </span>
+      </form>
+    </Modal>
   );
 }

@@ -45,18 +45,19 @@ export interface GoalTarget {
   startDate: string; // ISO date string
 }
 
+export type GoalType = 'cumulative' | 'tracking';
+
 export interface Goal {
   id: string;
   name: string;
   unit: string;
+  type: GoalType;
   icon?: string;
-  quickButtons?: number[];
+  description?: string;
+  target?: number;
+  initialValue?: number;
+  direction?: 'up' | 'down'; // up: more is better, down: less is better
   entries: GoalEntry[];
-  currentTarget?: GoalTarget;
-  history?: {
-    target: GoalTarget;
-    entries: GoalEntry[];
-  }[];
 }
 
 export interface Habit {

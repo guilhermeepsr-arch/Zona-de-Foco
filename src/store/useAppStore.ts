@@ -143,8 +143,7 @@ export const useAppStore = create<AppState & AppActions>()(
             {
               ...data,
               id,
-              entries: [],
-              history: [],
+              entries: data.entries || [],
             },
           ],
         }));
@@ -180,23 +179,10 @@ export const useAppStore = create<AppState & AppActions>()(
       },
 
       archiveGoalProgress: (goalId) => {
-        const state = get();
-        const goal = state.goals.find(g => g.id === goalId);
-        if (!goal || !goal.currentTarget) return;
-
-        const historyEntry = {
-          target: goal.currentTarget,
-          entries: [...goal.entries]
-        };
-
+        // Simple clear for now as we overhauled goals
         set((state) => ({
           goals: state.goals.map((g) =>
-            g.id === goalId ? { 
-              ...g, 
-              entries: [], 
-              currentTarget: undefined,
-              history: [...(g.history || []), historyEntry] 
-            } : g
+            g.id === goalId ? { ...g, entries: [] } : g
           ),
         }));
       },

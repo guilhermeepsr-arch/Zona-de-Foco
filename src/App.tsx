@@ -71,17 +71,17 @@ export default function App() {
   );
 }
 
-function NavButton({
-  active,
-  onClick,
-  icon,
-  label,
-}: {
+const NavButton: React.FC<{
   active: boolean;
   onClick: () => void;
   icon: React.ReactNode;
   label: string;
-}) {
+}> = ({
+  active,
+  onClick,
+  icon,
+  label,
+}) => {
   return (
     <button
       onClick={onClick}

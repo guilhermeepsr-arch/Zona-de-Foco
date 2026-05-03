@@ -40,11 +40,31 @@ export default function Dashboard() {
 
   const goalSummary = useMemo(() => {
     const activeGoals = goals.length;
-    const goalsWithTarget = goals.filter(g => g.currentTarget);
+    const goalsWithTarget = goals.filter(g => g.target);
     const totalProgress = goalsWithTarget.length > 0 
       ? goalsWithTarget.reduce((acc, g) => {
-          const goalCurrentValue = (g.entries || []).reduce((sum, e) => sum + e.value, 0);
-          return acc + Math.min(1, goalCurrentValue / g.currentTarget!.value);
+          const goalCurrentValue = g.type === 'cumulative' 
+            ? (g.entries || []).reduce((sum, e) => sum + e.value, 0)
+            : (g.entries.length > 0 ? g.entries[g.entries.length - 1].value : g.initialValue || 0);
+          
+          if (!g.target) return acc;
+          const targetVal = g.target;
+          const startVal = g.initialValue || 0;
+
+          let progress = 0;
+          if (g.type === 'cumulative') {
+            progress = Math.min(1, goalCurrentValue / targetVal);
+          } else {
+            const range = Math.abs(targetVal - startVal);
+            if (range > 0) {
+              if (g.direction === 'up') {
+                progress = Math.max(0, Math.min(1, (goalCurrentValue - startVal) / range));
+              } else {
+                progress = Math.max(0, Math.min(1, (startVal - goalCurrentValue) / range));
+              }
+            }
+          }
+          return acc + progress;
         }, 0) / goalsWithTarget.length * 100
       : 0;
     return { activeGoals, totalProgress };
