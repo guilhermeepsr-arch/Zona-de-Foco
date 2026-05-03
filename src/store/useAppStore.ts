@@ -299,6 +299,12 @@ export const useAppStore = create<AppState & AppActions>()(
           habitCategories: [...state.habitCategories, name] 
         })),
 
+      updateHabitCategory: (oldName, newName) =>
+        set((state) => ({
+          habitCategories: state.habitCategories.map(c => c === oldName ? newName : c),
+          habits: state.habits.map(h => h.category === oldName ? { ...h, category: newName } : h)
+        })),
+
       deleteHabitCategory: (name) =>
         set((state) => ({
           habitCategories: state.habitCategories.filter(c => c !== name),

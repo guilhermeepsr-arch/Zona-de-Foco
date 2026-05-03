@@ -54,12 +54,14 @@ export default function Habits() {
   const [isNewHabitModalOpen, setIsNewHabitModalOpen] = useState(false);
   const [isEditHabitModalOpen, setIsEditHabitModalOpen] = useState(false);
   const [isNewCategoryModalOpen, setIsNewCategoryModalOpen] = useState(false);
+  const [isEditCategoryModalOpen, setIsEditCategoryModalOpen] = useState(false);
   
   const [selectedHabitId, setSelectedHabitId] = useState<string | null>(null);
   
   const [newHabitName, setNewHabitName] = useState('');
   const [newHabitIcon, setNewHabitIcon] = useState('✨');
   const [newCategoryName, setNewCategoryName] = useState('');
+  const [editingCategoryName, setEditingCategoryName] = useState('');
   
   const [editingName, setEditingName] = useState('');
   const [editingCategory, setEditingCategory] = useState('');
@@ -111,6 +113,17 @@ export default function Habits() {
     setIsNewCategoryModalOpen(false);
   };
 
+  const handleUpdateCategory = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingCategoryName.trim() || editingCategoryName === activeCategory) {
+      setIsEditCategoryModalOpen(false);
+      return;
+    }
+    useAppStore.getState().updateHabitCategory(activeCategory, editingCategoryName);
+    setActiveCategory(editingCategoryName);
+    setIsEditCategoryModalOpen(false);
+  };
+
   const handleSaveEdit = () => {
     if (selectedHabitId && editingName.trim()) {
       updateHabit(selectedHabitId, { 
@@ -146,6 +159,15 @@ export default function Habits() {
             className="w-10 h-10 flex items-center justify-center bg-white rounded-xl border border-zinc-200 text-zinc-300 hover:text-red-500 transition-all shrink-0 ml-2 mb-1 shadow-sm"
           >
             <Plus className="w-5 h-5" />
+          </button>
+          <button 
+            onClick={() => {
+              setEditingCategoryName(activeCategory);
+              setIsEditCategoryModalOpen(true);
+            }}
+            className="w-10 h-10 flex items-center justify-center bg-white rounded-xl border border-zinc-200 text-zinc-300 hover:text-red-500 transition-all shrink-0 mb-1 shadow-sm"
+          >
+            <Settings2 className="w-4 h-4" />
           </button>
         </div>
       </header>
@@ -329,6 +351,47 @@ export default function Habits() {
           <Button type="submit" className="w-full py-4 bg-zinc-900 text-white rounded-2xl font-black uppercase tracking-widest">
             Criar Grupo
           </Button>
+        </form>
+      </Modal>
+
+      {/* Edit Category Modal */}
+      <Modal 
+        isOpen={isEditCategoryModalOpen} 
+        onClose={() => setIsEditCategoryModalOpen(false)} 
+        title="Editar Categoria"
+      >
+        <form onSubmit={handleUpdateCategory} className="space-y-6">
+          <div className="flex flex-col gap-2">
+            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1">Nome do Grupo</label>
+            <input
+              autoFocus
+              type="text"
+              value={editingCategoryName}
+              onChange={(e) => setEditingCategoryName(e.target.value)}
+              className="w-full bg-zinc-100 border-none rounded-2xl px-6 py-4 text-sm font-bold text-zinc-900 focus:ring-2 focus:ring-red-500 shadow-inner"
+            />
+          </div>
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                if (habitCategories.length <= 1) {
+                  alert("Você precisa ter pelo menos uma aba.");
+                  return;
+                }
+                if (confirm(`Deseja realmente apagar a aba "${activeCategory}"? Os hábitos serão movidos para a primeira aba disponível.`)) {
+                  deleteHabitCategory(activeCategory);
+                  setIsEditCategoryModalOpen(false);
+                }
+              }}
+              className="flex-1 py-4 bg-zinc-50 text-zinc-300 hover:text-red-500 border border-zinc-100 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-colors"
+            >
+              Apagar Aba
+            </button>
+            <Button type="submit" className="flex-[2] bg-zinc-900 text-white">
+              Salvar
+            </Button>
+          </div>
         </form>
       </Modal>
 

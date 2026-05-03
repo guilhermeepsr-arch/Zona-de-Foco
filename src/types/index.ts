@@ -142,6 +142,7 @@ export interface AppActions {
   updateHabit: (id: string, data: Partial<Habit>) => void;
   reorderHabits: (habits: Habit[]) => void;
   addHabitCategory: (name: string) => void;
+  updateHabitCategory: (oldName: string, newName: string) => void;
   deleteHabitCategory: (name: string) => void;
   addHabitTemplate: (name: string) => void;
   deleteHabitTemplate: (index: number) => void;
