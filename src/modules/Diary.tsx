@@ -16,7 +16,8 @@ import {
   Plus,
   FileText,
   Copy,
-  Clock
+  Clock,
+  Settings
 } from 'lucide-react';
 import { format, addDays, subDays, startOfToday, parseISO, isSameDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -28,6 +29,12 @@ export default function Diary({ onBack }: { onBack: () => void }) {
   const [noteContent, setNoteContent] = useState('');
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [newTemplateName, setNewTemplateName] = useState('');
+
+  // Auto-save: sync content whenever it changes
+  useEffect(() => {
+    const dateStr = format(currentDate, 'yyyy-MM-dd');
+    saveDiaryEntry(dateStr, noteContent);
+  }, [noteContent, currentDate, saveDiaryEntry]);
 
   // Sync content with date
   useEffect(() => {
@@ -66,11 +73,19 @@ export default function Diary({ onBack }: { onBack: () => void }) {
   return (
     <div className="pb-32 bg-[#f8f8f8] min-h-screen text-zinc-900">
       <header className="px-6 pt-10 mb-8">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-9 h-9 bg-red-600 rounded-xl flex items-center justify-center shadow-lg shadow-red-900/10">
-            <BookOpen className="w-5 h-5 text-white stroke-[2.5]" />
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 bg-red-600 rounded-xl flex items-center justify-center shadow-lg shadow-red-900/10">
+              <BookOpen className="w-5 h-5 text-white stroke-[2.5]" />
+            </div>
+            <h1 className="text-xl font-black text-zinc-900 uppercase tracking-tighter">Diário</h1>
           </div>
-          <h1 className="text-xl font-black text-zinc-900 uppercase tracking-tighter">Diário</h1>
+          <button 
+            onClick={() => setIsTemplateModalOpen(true)}
+            className="w-10 h-10 bg-white border border-zinc-200 rounded-xl flex items-center justify-center text-zinc-400 hover:text-red-600 transition-all shadow-sm group"
+          >
+            <Settings className="w-5 h-5 group-hover:rotate-90 transition-transform" />
+          </button>
         </div>
 
         {/* Date Selector */}
@@ -105,21 +120,15 @@ export default function Diary({ onBack }: { onBack: () => void }) {
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.98 }}
-            className="space-y-6"
+            className="space-y-4"
           >
-            {/* Templates */}
+            {/* Template Shortcuts */}
             <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
-              <button
-                onClick={() => setIsTemplateModalOpen(true)}
-                className="px-4 py-2 bg-white border border-zinc-200 rounded-xl text-[10px] font-black uppercase tracking-widest hover:text-red-600 transition-all flex items-center gap-2 shrink-0 group"
-              >
-                <Plus className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" /> Template
-              </button>
-              {diaryTemplates.map(template => (
+              {diaryTemplates.slice(0, 5).map(template => (
                 <button
                   key={template.id}
                   onClick={() => applyTemplate(template.content)}
-                  className="px-4 py-2 bg-white border border-zinc-200 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-zinc-50 transition-colors whitespace-nowrap text-zinc-900 shrink-0"
+                  className="px-3.5 py-2 bg-white border border-zinc-200 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-zinc-50 transition-colors whitespace-nowrap text-zinc-500 hover:text-zinc-900 shrink-0"
                 >
                   {template.name}
                 </button>
@@ -131,25 +140,18 @@ export default function Diary({ onBack }: { onBack: () => void }) {
               <textarea
                 value={noteContent}
                 onChange={(e) => setNoteContent(e.target.value)}
-                placeholder="Como foi seu dia? Escreva aqui..."
-                className="w-full min-h-[400px] bg-white border-2 border-zinc-100 rounded-[2.5rem] p-8 text-sm font-medium leading-relaxed text-zinc-600 placeholder:text-zinc-300 outline-none focus:ring-4 focus:ring-red-500/5 focus:border-red-500 transition-all shadow-xl shadow-zinc-200/30 resize-none"
+                placeholder="Como foi seu dia? O que está na sua mente? (Salva automaticamente)"
+                className="w-full min-h-[480px] bg-white border-2 border-zinc-100 rounded-xl p-8 text-base font-medium leading-[1.8] text-zinc-700 placeholder:text-zinc-200 outline-none focus:ring-4 focus:ring-red-500/5 focus:border-red-500 transition-all shadow-xl shadow-zinc-200/20 resize-none font-serif"
               />
               <div className="absolute top-8 right-8">
                 {noteContent.length > 0 && (
-                  <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 rounded-full border border-emerald-100">
-                    <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                    <span className="text-[9px] font-black uppercase tracking-widest text-emerald-600">Editando</span>
+                  <div className="flex items-center gap-2 px-2.5 py-1.5 bg-emerald-50 rounded-lg border border-emerald-100/50">
+                    <div className="w-1 h-1 bg-emerald-500 rounded-full animate-pulse" />
+                    <span className="text-[7.5px] font-black uppercase tracking-[0.25em] text-emerald-600">Sync</span>
                   </div>
                 )}
               </div>
             </div>
-
-            <Button 
-              onClick={handleSaveNote} 
-              className="w-full py-5 rounded-2xl flex items-center justify-center gap-3 bg-zinc-900 text-white font-black uppercase tracking-widest text-xs shadow-lg shadow-zinc-400/20 active:scale-95 transition-all"
-            >
-              <Save className="w-5 h-5" /> Salvar Diário
-            </Button>
           </motion.div>
         </AnimatePresence>
       </main>

@@ -82,14 +82,14 @@ function ListItemComponent({
       dragListener={false}
       dragControls={controls}
       className={cn(
-        "group flex items-center gap-4 p-4 bg-white border border-zinc-200 rounded-2xl transition-all mb-3 shadow-sm",
+        "group flex items-center gap-3 p-2.5 px-4 bg-white border border-zinc-200 rounded-xl transition-all mb-2 shadow-sm",
         item.completed && "opacity-40 grayscale-[0.5]"
       )}
     >
       <button
         onClick={() => toggleListItem(listId, item.id)}
         className={cn(
-          "w-6 h-6 rounded-lg flex items-center justify-center transition-all flex-shrink-0 border-2 shadow-sm",
+          "w-5 h-5 rounded-md flex items-center justify-center transition-all flex-shrink-0 border-2 shadow-sm",
           item.completed 
             ? "bg-red-600 border-red-600 text-white" 
             : "bg-zinc-50 border-zinc-200 hover:border-red-600/50"
@@ -98,7 +98,7 @@ function ListItemComponent({
         <AnimatePresence>
           {item.completed && (
             <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}>
-              <Check className="w-4 h-4 stroke-[4]" />
+              <Check className="w-3 h-3 stroke-[4]" />
             </motion.div>
           )}
         </AnimatePresence>
@@ -124,7 +124,7 @@ function ListItemComponent({
               setEditValue(item.description);
             }}
             className={cn(
-              "font-bold text-[13px] transition-all truncate cursor-text tracking-tight",
+              "font-bold text-[12px] transition-all truncate cursor-text tracking-tight",
               item.completed ? "text-zinc-400 line-through" : "text-zinc-900"
             )}
           >
@@ -133,18 +133,18 @@ function ListItemComponent({
         )}
       </div>
 
-      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="flex items-center gap-1">
         <button
           onClick={() => deleteListItem(listId, item.id)}
-          className="p-2 text-zinc-400 hover:text-red-500 transition-colors"
+          className="p-1.5 text-zinc-300 hover:text-red-500 transition-colors"
         >
-          <Trash2 className="w-4 h-4" />
+          <Trash2 className="w-3.5 h-3.5" />
         </button>
         <div 
           onPointerDown={(e) => controls.start(e)}
-          className="p-2 text-zinc-200 cursor-grab active:cursor-grabbing touch-none"
+          className="p-1.5 text-zinc-200 cursor-grab active:cursor-grabbing touch-none hidden sm:block"
         >
-          <GripVertical className="w-4 h-4" />
+          <GripVertical className="w-3.5 h-3.5" />
         </div>
       </div>
     </Reorder.Item>
