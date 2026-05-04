@@ -165,7 +165,7 @@ const GoalCard: React.FC<{ goal: Goal; onAdd: (v: number) => void; onClick: () =
             <span className="text-[8px]">/ {goal.target || '-'} {goal.unit}</span>
           </p>
           {stats.secondaryInfo && (
-            <p className="text-[7px] font-black text-emerald-600 uppercase tracking-tighter mt-1">
+            <p className={cn("text-[7px] font-black uppercase tracking-tighter mt-1", stats.trendColor || "text-emerald-600")}>
               {stats.secondaryInfo}
             </p>
           )}
@@ -217,11 +217,15 @@ function calculateGoalStats(goal: Goal) {
     const diffWeek = currentAvg - lastAvg;
     const diffStart = currentAvg - (goal.initialValue || 0);
 
+    const isGoodTrend = goal.direction === 'up' ? diffWeek >= 0 : diffWeek <= 0;
+    const trendColor = isGoodTrend ? 'text-emerald-600' : 'text-red-500';
+
     const progressText = `Sem: ${diffWeek >= 0 ? '+' : ''}${diffWeek.toFixed(1)} | Tot: ${diffStart >= 0 ? '+' : ''}${diffStart.toFixed(1)}`;
 
     return {
       displayValue: currentAvg.toFixed(1),
-      secondaryInfo: progressText
+      secondaryInfo: progressText,
+      trendColor
     };
   }
 }
@@ -560,6 +564,46 @@ const NewGoalModal: React.FC<{ isOpen: boolean; onClose: () => void; onAdd: (g: 
             </button>
           </div>
         </div>
+
+        {type === 'tracking' && (
+          <div className="space-y-3 pt-2 border-t border-zinc-50 animate-in fade-in slide-in-from-top-1">
+             <div className="flex flex-col gap-1.5">
+                <label className="text-[8px] font-black uppercase tracking-widest text-zinc-400 ml-1">Valor Inicial</label>
+                <input 
+                  type="number" 
+                  value={initialValue} 
+                  onChange={(e) => setInitialValue(e.target.value)}
+                  placeholder={`Ex: 85 (${unit || 'valor'})`}
+                  className="w-full h-9 bg-zinc-100 border-none rounded-xl px-4 text-[9px] font-bold text-zinc-900 shadow-inner"
+                />
+             </div>
+             <div className="flex flex-col gap-1.5">
+                <label className="text-[8px] font-black uppercase tracking-widest text-zinc-400 ml-1">Melhor quando...</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setDirection('up')}
+                    className={cn(
+                      "py-2 px-2 rounded-lg text-[7px] font-black uppercase tracking-widest border transition-all",
+                      direction === 'up' ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-white text-zinc-200 border-zinc-50"
+                    )}
+                  >
+                    ↑ Maior
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDirection('down')}
+                    className={cn(
+                      "py-2 px-2 rounded-lg text-[7px] font-black uppercase tracking-widest border transition-all",
+                      direction === 'down' ? "bg-red-50 text-red-600 border-red-100" : "bg-white text-zinc-200 border-zinc-50"
+                    )}
+                  >
+                    ↓ Menor
+                  </button>
+                </div>
+             </div>
+          </div>
+        )}
 
         <Button type="submit" className="w-full py-3.5 text-[9px] font-black uppercase tracking-[0.2em] mt-2">
            Criar Meta
