@@ -30,18 +30,41 @@ export default function Diary({ onBack }: { onBack: () => void }) {
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [newTemplateName, setNewTemplateName] = useState('');
 
-  // Auto-save: sync content whenever it changes
-  useEffect(() => {
-    const dateStr = format(currentDate, 'yyyy-MM-dd');
-    saveDiaryEntry(dateStr, noteContent);
-  }, [noteContent, currentDate, saveDiaryEntry]);
+  // Ref to store the current date for the effect to know when date actually changed
+  const lastDateRef = useRef(format(currentDate, 'yyyy-MM-dd'));
+  const isInitialMount = useRef(true);
 
-  // Sync content with date
+  // Load content when date changes
   useEffect(() => {
     const dateStr = format(currentDate, 'yyyy-MM-dd');
     const entry = diaryEntries.find(e => e.id === dateStr);
-    setNoteContent(entry?.content || '');
+    const content = entry?.content || '';
+    
+    // Only set note content if date changed OR if it's the initial mount
+    // This prevents the loop when diaryEntries updates due to a save
+    if (dateStr !== lastDateRef.current || isInitialMount.current) {
+      setNoteContent(content);
+      lastDateRef.current = dateStr;
+      isInitialMount.current = false;
+    }
   }, [currentDate, diaryEntries]);
+
+  // Save mechanism: We only save on blur or explicit actions, or we can use a debounce
+  // But given the infinite loop issue, let's simplify: 
+  // 1. We keep noteContent as local state
+  // 2. We use an effect to save, but we check if the content actually changed relative to what's in the store
+  useEffect(() => {
+    const dateStr = format(currentDate, 'yyyy-MM-dd');
+    const entry = diaryEntries.find(e => e.id === dateStr);
+    const storedContent = entry?.content || '';
+
+    if (noteContent !== storedContent) {
+      const timeoutId = setTimeout(() => {
+        saveDiaryEntry(dateStr, noteContent);
+      }, 1000); // 1s debounce
+      return () => clearTimeout(timeoutId);
+    }
+  }, [noteContent, currentDate, diaryEntries, saveDiaryEntry]);
 
   const dateLabel = useMemo(() => {
     if (isSameDay(currentDate, startOfToday())) return 'Hoje';
