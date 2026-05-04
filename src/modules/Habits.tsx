@@ -4,9 +4,17 @@ import {
   startOfWeek, 
   eachDayOfInterval, 
   format, 
-  isSameDay
+  isSameDay,
+  startOfMonth,
+  endOfMonth,
+  subWeeks,
+  subDays,
+  parseISO,
+  subMonths,
+  addMonths
 } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { ResponsiveContainer, BarChart, Bar, XAxis, Tooltip, Cell } from 'recharts';
 import { useAppStore } from '../store/useAppStore';
 import { Modal, cn, Button, FAB } from '../components/UI';
 import { 
@@ -19,7 +27,9 @@ import {
   ChevronRight, 
   MoreHorizontal,
   LayoutGrid,
-  Menu
+  Menu,
+  TrendingUp,
+  Calendar as CalendarIcon
 } from 'lucide-react';
 import { Habit } from '../types';
 
@@ -53,6 +63,7 @@ export default function Habits() {
   const [currentWeekStart, setCurrentWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
   const [isNewHabitModalOpen, setIsNewHabitModalOpen] = useState(false);
   const [isEditHabitModalOpen, setIsEditHabitModalOpen] = useState(false);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isNewCategoryModalOpen, setIsNewCategoryModalOpen] = useState(false);
   const [isEditCategoryModalOpen, setIsEditCategoryModalOpen] = useState(false);
   
@@ -243,10 +254,7 @@ export default function Habits() {
                 <div 
                   onClick={() => {
                     setSelectedHabitId(habit.id);
-                    setEditingName(habit.name);
-                    setEditingCategory(habit.category || 'Geral');
-                    setEditingIcon(habit.icon || '✨');
-                    setIsEditHabitModalOpen(true);
+                    setIsDetailModalOpen(true);
                   }}
                   className="flex items-center gap-2 p-1.5 bg-white hover:bg-zinc-50 transition-all rounded-l-xl cursor-pointer border-l-2 border-transparent hover:border-red-600 shadow-sm overflow-hidden"
                 >
@@ -294,6 +302,23 @@ export default function Habits() {
           <Plus className="w-8 h-8 stroke-[3]" />
         </button>
       </div>
+
+      {/* Modals */}
+      {selectedHabit && (
+        <HabitDetailModal
+          key={selectedHabit.id}
+          isOpen={isDetailModalOpen}
+          habit={selectedHabit}
+          onClose={() => setIsDetailModalOpen(false)}
+          onSettings={() => {
+            setEditingName(selectedHabit.name);
+            setEditingCategory(selectedHabit.category || 'Geral');
+            setEditingIcon(selectedHabit.icon || '✨');
+            setIsDetailModalOpen(false);
+            setIsEditHabitModalOpen(true);
+          }}
+        />
+      )}
 
       {/* New Habit Modal */}
       <Modal 
@@ -468,5 +493,143 @@ export default function Habits() {
         </div>
       </Modal>
     </div>
+  );
+}
+
+const HabitDetailModal: React.FC<{ habit: Habit; isOpen: boolean; onClose: () => void; onSettings: () => void }> = ({ habit, isOpen, onClose, onSettings }) => {
+  const today = new Date();
+  const [currentMonth, setCurrentMonth] = useState(startOfMonth(today));
+  
+  const daysInMonth = useMemo(() => {
+    const start = startOfMonth(currentMonth);
+    const end = endOfMonth(currentMonth);
+    return eachDayOfInterval({ start, end });
+  }, [currentMonth]);
+
+  const weeklyData = useMemo(() => {
+    const data = [];
+    const days = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
+    for (let i = 6; i >= 0; i--) {
+      const d = subDays(today, i);
+      const dateStr = format(d, 'yyyy-MM-dd');
+      const isDone = habit.completedDates.includes(dateStr);
+      
+      data.push({
+        name: days[d.getDay()],
+        value: isDone ? 1 : 0,
+        fullDate: format(d, 'dd/MM')
+      });
+    }
+    return data;
+  }, [habit, today]);
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title={habit.name}>
+      <div className="space-y-6 max-h-[75vh] overflow-y-auto no-scrollbar pt-2">
+        <div className="flex justify-end -mt-4">
+          <button 
+            onClick={onSettings}
+            className="p-2 text-zinc-400 hover:text-red-500 transition-colors"
+          >
+            <Settings2 className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Weekly Chart */}
+        <section>
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="text-[8px] font-black uppercase tracking-[0.2em] text-zinc-400 flex items-center gap-1.5">
+              <TrendingUp className="w-3 h-3" /> Últimos 7 dias
+            </h4>
+          </div>
+          <div className="h-24 w-full bg-zinc-50 rounded-xl p-2 border border-zinc-100">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={weeklyData}>
+                <Bar dataKey="value" radius={[2, 2, 0, 0]}>
+                  {weeklyData.map((entry, index) => (
+                    <Cell 
+                      key={`cell-${entry.fullDate}-${index}`} 
+                      fill={entry.value > 0 ? '#ef4444' : '#e4e4e7'} 
+                    />
+                  ))}
+                </Bar>
+                <XAxis 
+                  dataKey="fullDate" 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tickFormatter={(val, i) => weeklyData[i]?.name || ''}
+                  tick={{ fontSize: 7, fontWeight: 900, fill: '#D4D4D8' }}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </section>
+
+        {/* Calendar */}
+        <section>
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="text-[8px] font-black uppercase tracking-[0.2em] text-zinc-400 flex items-center gap-1.5">
+              <CalendarIcon className="w-3 h-3" /> Histórico
+            </h4>
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={() => setCurrentMonth(prev => subMonths(prev, 1))}
+                className="w-5 h-5 flex items-center justify-center bg-white border border-zinc-100 rounded-lg text-zinc-400"
+              >
+                <ChevronLeft className="w-2.5 h-2.5" />
+              </button>
+              <span className="text-[8px] font-black uppercase tracking-widest text-zinc-900 w-20 text-center">
+                {format(currentMonth, 'MMM yy', { locale: ptBR })}
+              </span>
+              <button 
+                onClick={() => setCurrentMonth(prev => addMonths(prev, 1))}
+                className="w-5 h-5 flex items-center justify-center bg-white border border-zinc-100 rounded-lg text-zinc-400"
+              >
+                <ChevronRight className="w-2.5 h-2.5" />
+              </button>
+            </div>
+          </div>
+          <div className="grid grid-cols-7 gap-1">
+            {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((d, i) => (
+              <div key={`${d}-${i}`} className="text-center text-[7px] font-black text-zinc-300 py-0.5 uppercase">{d}</div>
+            ))}
+            {daysInMonth.map((day) => {
+              const dateStr = format(day, 'yyyy-MM-dd');
+              const isDone = habit.completedDates.includes(dateStr);
+              const isFail = habit.failedDates?.includes(dateStr);
+              const isTodayDay = isSameDay(day, today);
+              
+              return (
+                <div 
+                  key={day.toISOString()}
+                  className={cn(
+                    "aspect-square rounded-lg border border-zinc-100/50 flex flex-col items-center justify-center gap-0.5 transition-all",
+                    isTodayDay ? "border-red-500 bg-red-50/20" : "bg-white",
+                    isDone ? "bg-emerald-50 border-emerald-100" : "",
+                    isFail ? "bg-red-50 border-red-100" : ""
+                  )}
+                >
+                  <span className={cn(
+                    "text-[6px] font-black",
+                    isTodayDay ? "text-red-600" : "text-zinc-200"
+                  )}>
+                    {format(day, 'd')}
+                  </span>
+                  {isDone && <Check className="w-2 h-2 text-emerald-600 stroke-[4]" />}
+                  {isFail && <X className="w-2 h-2 text-red-600 stroke-[4]" />}
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        <button 
+          onClick={onSettings}
+          className="w-full py-3 bg-zinc-50 border border-zinc-100 text-zinc-400 hover:text-zinc-900 rounded-xl text-[8px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2"
+        >
+          <Settings2 className="w-3 h-3" /> Configurações do Hábito
+        </button>
+      </div>
+    </Modal>
   );
 }

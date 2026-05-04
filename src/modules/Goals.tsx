@@ -8,6 +8,8 @@ import {
   eachDayOfInterval, 
   format, 
   subWeeks, 
+  subMonths,
+  addMonths,
   isSameDay, 
   startOfMonth, 
   endOfMonth, 
@@ -102,6 +104,7 @@ export default function Goals() {
       {selectedGoal && (
         <>
           <GoalDetailModal
+            key={`detail-${selectedGoal.id}`}
             isOpen={isDetailModalOpen}
             goal={selectedGoal}
             onClose={() => setIsDetailModalOpen(false)}
@@ -111,6 +114,7 @@ export default function Goals() {
             }}
           />
           <EditGoalModal
+            key={`edit-${selectedGoal.id}`}
             isOpen={isEditGoalModalOpen}
             goal={selectedGoal}
             onClose={() => setIsEditGoalModalOpen(false)}
@@ -222,7 +226,7 @@ function calculateGoalStats(goal: Goal) {
   }
 }
 
-function GoalDetailModal({ goal, isOpen, onClose, onSettings }: { goal: Goal; isOpen: boolean; onClose: () => void; onSettings: () => void }) {
+const GoalDetailModal: React.FC<{ goal: Goal; isOpen: boolean; onClose: () => void; onSettings: () => void }> = ({ goal, isOpen, onClose, onSettings }) => {
   const { addGoalEntry } = useAppStore();
   const today = new Date();
   const [currentMonth, setCurrentMonth] = useState(startOfMonth(today));
@@ -247,11 +251,12 @@ function GoalDetailModal({ goal, isOpen, onClose, onSettings }: { goal: Goal; is
       data.push({
         name: days[d.getDay()],
         value,
-        fullDate: format(d, 'dd/MM')
+        fullDate: format(d, 'dd/MM'),
+        dayIndex: d.getDay() // Added for unique keys
       });
     }
     return data;
-  }, [goal]);
+  }, [goal, today]);
 
   const getDayTotal = (day: Date) => {
     const dayEntries = goal.entries.filter(e => isSameDay(parseISO(e.date), day));
@@ -290,16 +295,17 @@ function GoalDetailModal({ goal, isOpen, onClose, onSettings }: { goal: Goal; is
                   <Bar dataKey="value" radius={[2, 2, 0, 0]}>
                     {weeklyData.map((entry, index) => (
                       <Cell 
-                        key={`cell-${index}`} 
+                        key={`cell-${entry.fullDate}-${index}`} 
                         fill={entry.value > 0 ? '#ef4444' : '#e4e4e7'} 
                       />
                     ))}
                   </Bar>
                   <XAxis 
-                    dataKey="name" 
+                    dataKey="fullDate" 
                     axisLine={false} 
                     tickLine={false} 
-                    tick={{ fontSize: 8, fontWeight: 900, fill: '#A1A1AA' }}
+                    tickFormatter={(val, i) => weeklyData[i]?.name || ''}
+                    tick={{ fontSize: 7, fontWeight: 900, fill: '#D4D4D8' }}
                   />
                   <Tooltip 
                     cursor={{ fill: 'transparent' }}
@@ -327,7 +333,7 @@ function GoalDetailModal({ goal, isOpen, onClose, onSettings }: { goal: Goal; is
               </h4>
               <div className="flex items-center gap-2">
                 <button 
-                  onClick={() => setCurrentMonth(prev => subWeeks(prev, 4))}
+                  onClick={() => setCurrentMonth(prev => subMonths(prev, 1))}
                   className="w-5 h-5 flex items-center justify-center bg-white border border-zinc-100 rounded-lg text-zinc-400"
                 >
                   <ChevronLeft className="w-2.5 h-2.5" />
@@ -336,7 +342,7 @@ function GoalDetailModal({ goal, isOpen, onClose, onSettings }: { goal: Goal; is
                   {format(currentMonth, 'MMM yy', { locale: ptBR })}
                 </span>
                 <button 
-                  onClick={() => setCurrentMonth(prev => addWeeks(prev, 4))}
+                  onClick={() => setCurrentMonth(prev => addMonths(prev, 1))}
                   className="w-5 h-5 flex items-center justify-center bg-white border border-zinc-100 rounded-lg text-zinc-400"
                 >
                   <ChevronRight className="w-2.5 h-2.5" />
@@ -345,8 +351,8 @@ function GoalDetailModal({ goal, isOpen, onClose, onSettings }: { goal: Goal; is
             </div>
 
             <div className="grid grid-cols-7 gap-1">
-              {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map(d => (
-                <div key={d} className="text-center text-[7px] font-black text-zinc-300 py-0.5 uppercase">{d}</div>
+              {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((d, i) => (
+                <div key={`${d}-${i}`} className="text-center text-[7px] font-black text-zinc-300 py-0.5 uppercase">{d}</div>
               ))}
               {daysInMonth.map((day) => {
                 const total = getDayTotal(day);
@@ -392,6 +398,7 @@ function GoalDetailModal({ goal, isOpen, onClose, onSettings }: { goal: Goal; is
       </Modal>
 
       <DayValueModal
+        key={selectedDayToAdd ? selectedDayToAdd.toISOString() : 'none'}
         isOpen={!!selectedDayToAdd}
         onClose={() => setSelectedDayToAdd(null)}
         date={selectedDayToAdd}
@@ -408,7 +415,7 @@ function GoalDetailModal({ goal, isOpen, onClose, onSettings }: { goal: Goal; is
   );
 }
 
-function DayValueModal({ isOpen, onClose, date, onAdd, unit, type }: { isOpen: boolean; onClose: () => void; date: Date | null; onAdd: (v: number) => void; unit: string; type: GoalType }) {
+const DayValueModal: React.FC<{ isOpen: boolean; onClose: () => void; date: Date | null; onAdd: (v: number) => void; unit: string; type: GoalType }> = ({ isOpen, onClose, date, onAdd, unit, type }) => {
   const [val, setVal] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -448,7 +455,7 @@ function DayValueModal({ isOpen, onClose, date, onAdd, unit, type }: { isOpen: b
   );
 }
 
-function NewGoalModal({ isOpen, onClose, onAdd }: { isOpen: boolean; onClose: () => void; onAdd: (g: any) => void }) {
+const NewGoalModal: React.FC<{ isOpen: boolean; onClose: () => void; onAdd: (g: any) => void }> = ({ isOpen, onClose, onAdd }) => {
   const [name, setName] = useState('');
   const [icon, setIcon] = useState('🎯');
   const [unit, setUnit] = useState('');
@@ -562,14 +569,14 @@ function NewGoalModal({ isOpen, onClose, onAdd }: { isOpen: boolean; onClose: ()
   );
 }
 
-function EditGoalModal({ goal, isOpen, onClose, onUpdate, onDelete, onReset }: { 
+const EditGoalModal: React.FC<{ 
   goal: Goal; 
   isOpen: boolean; 
   onClose: () => void; 
   onUpdate: (id: string, d: any) => void;
   onDelete: (id: string) => void;
   onReset: (id: string) => void;
-}) {
+}> = ({ goal, isOpen, onClose, onUpdate, onDelete, onReset }) => {
   const [name, setName] = useState(goal.name);
   const [icon, setIcon] = useState(goal.icon || '🎯');
   const [unit, setUnit] = useState(goal.unit);

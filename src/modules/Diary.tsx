@@ -141,7 +141,7 @@ export default function Diary({ onBack }: { onBack: () => void }) {
                 value={noteContent}
                 onChange={(e) => setNoteContent(e.target.value)}
                 placeholder="Como foi seu dia? O que está na sua mente? (Salva automaticamente)"
-                className="w-full min-h-[480px] bg-white border-2 border-zinc-100 rounded-xl p-8 text-base font-medium leading-[1.8] text-zinc-700 placeholder:text-zinc-200 outline-none focus:ring-4 focus:ring-red-500/5 focus:border-red-500 transition-all shadow-xl shadow-zinc-200/20 resize-none font-serif"
+                className="w-full min-h-[480px] bg-white border-2 border-zinc-100 rounded-xl p-7 text-sm font-medium leading-[1.7] text-zinc-700 placeholder:text-zinc-200 outline-none focus:ring-4 focus:ring-red-500/5 focus:border-red-500 transition-all shadow-xl shadow-zinc-200/20 resize-none font-serif"
               />
               <div className="absolute top-8 right-8">
                 {noteContent.length > 0 && (
