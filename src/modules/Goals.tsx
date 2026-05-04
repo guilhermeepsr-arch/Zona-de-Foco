@@ -223,8 +223,10 @@ function calculateGoalStats(goal: Goal) {
 }
 
 function GoalDetailModal({ goal, isOpen, onClose, onSettings }: { goal: Goal; isOpen: boolean; onClose: () => void; onSettings: () => void }) {
+  const { addGoalEntry } = useAppStore();
   const today = new Date();
   const [currentMonth, setCurrentMonth] = useState(startOfMonth(today));
+  const [selectedDayToAdd, setSelectedDayToAdd] = useState<Date | null>(null);
 
   const daysInMonth = useMemo(() => {
     const start = startOfMonth(currentMonth);
@@ -262,117 +264,186 @@ function GoalDetailModal({ goal, isOpen, onClose, onSettings }: { goal: Goal; is
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={goal.name}>
-      <div className="space-y-6 max-h-[75vh] overflow-y-auto no-scrollbar pt-2">
-        
-        {/* Weekly Chart */}
-        <section>
-          <div className="flex items-center justify-between mb-3">
-            <h4 className="text-[8px] font-black uppercase tracking-[0.2em] text-zinc-400 flex items-center gap-1.5">
-              <TrendingUp className="w-3 h-3" /> Últimos 7 dias
-            </h4>
+    <>
+      <Modal isOpen={isOpen} onClose={onClose} title={goal.name}>
+        <div className="space-y-6 max-h-[75vh] overflow-y-auto no-scrollbar pt-2">
+          
+          <div className="flex justify-end -mt-4">
+            <button 
+              onClick={onSettings}
+              className="p-2 text-zinc-400 hover:text-red-500 transition-colors"
+            >
+              <Settings2 className="w-4 h-4" />
+            </button>
           </div>
-          <div className="h-32 w-full bg-zinc-50 rounded-xl p-3 border border-zinc-100">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={weeklyData}>
-                <Bar dataKey="value" radius={[2, 2, 0, 0]}>
-                  {weeklyData.map((entry, index) => (
-                    <Cell 
-                      key={`cell-${index}`} 
-                      fill={entry.value > 0 ? '#ef4444' : '#e4e4e7'} 
-                    />
-                  ))}
-                </Bar>
-                <XAxis 
-                  dataKey="name" 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{ fontSize: 8, fontWeight: 900, fill: '#A1A1AA' }}
-                />
-                <Tooltip 
-                  cursor={{ fill: 'transparent' }}
-                  content={({ active, payload }) => {
-                    if (active && payload && payload.length) {
-                      return (
-                        <div className="bg-zinc-900 text-white px-2 py-1 rounded text-[9px] font-black">
-                          {payload[0].value} {goal.unit}
-                        </div>
-                      );
-                    }
-                    return null;
-                  }}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </section>
-
-        {/* Monthly Calendar */}
-        <section>
-          <div className="flex items-center justify-between mb-3">
-            <h4 className="text-[8px] font-black uppercase tracking-[0.2em] text-zinc-400 flex items-center gap-1.5">
-              <CalendarIcon className="w-3 h-3" /> Histórico
-            </h4>
-            <div className="flex items-center gap-2">
-              <button 
-                onClick={() => setCurrentMonth(prev => subWeeks(prev, 4))}
-                className="w-5 h-5 flex items-center justify-center bg-white border border-zinc-100 rounded-lg text-zinc-400"
-              >
-                <ChevronLeft className="w-2.5 h-2.5" />
-              </button>
-              <span className="text-[8px] font-black uppercase tracking-widest text-zinc-900 w-20 text-center">
-                {format(currentMonth, 'MMM yy', { locale: ptBR })}
-              </span>
-              <button 
-                onClick={() => setCurrentMonth(prev => addWeeks(prev, 4))}
-                className="w-5 h-5 flex items-center justify-center bg-white border border-zinc-100 rounded-lg text-zinc-400"
-              >
-                <ChevronRight className="w-2.5 h-2.5" />
-              </button>
+          
+          {/* Weekly Chart */}
+          <section>
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-[8px] font-black uppercase tracking-[0.2em] text-zinc-400 flex items-center gap-1.5">
+                <TrendingUp className="w-3 h-3" /> Últimos 7 dias
+              </h4>
             </div>
-          </div>
+            <div className="h-32 w-full bg-zinc-50 rounded-xl p-3 border border-zinc-100">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={weeklyData}>
+                  <Bar dataKey="value" radius={[2, 2, 0, 0]}>
+                    {weeklyData.map((entry, index) => (
+                      <Cell 
+                        key={`cell-${index}`} 
+                        fill={entry.value > 0 ? '#ef4444' : '#e4e4e7'} 
+                      />
+                    ))}
+                  </Bar>
+                  <XAxis 
+                    dataKey="name" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fontSize: 8, fontWeight: 900, fill: '#A1A1AA' }}
+                  />
+                  <Tooltip 
+                    cursor={{ fill: 'transparent' }}
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        return (
+                          <div className="bg-zinc-900 text-white px-2 py-1 rounded text-[9px] font-black">
+                            {payload[0].value} {goal.unit}
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </section>
 
-          <div className="grid grid-cols-7 gap-1">
-            {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map(d => (
-              <div key={d} className="text-center text-[7px] font-black text-zinc-300 py-0.5 uppercase">{d}</div>
-            ))}
-            {daysInMonth.map((day) => {
-              const total = getDayTotal(day);
-              const isTodayDay = isToday(day);
-              
-              return (
-                <div 
-                  key={day.toISOString()}
-                  className={cn(
-                    "aspect-square rounded-lg border border-zinc-100/50 flex flex-col items-center justify-center gap-0.5 transition-all",
-                    isTodayDay ? "border-red-500 bg-red-50/20" : "bg-white",
-                    total ? "bg-red-50" : ""
-                  )}
+          {/* Monthly Calendar */}
+          <section>
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-[8px] font-black uppercase tracking-[0.2em] text-zinc-400 flex items-center gap-1.5">
+                <CalendarIcon className="w-3 h-3" /> Histórico
+              </h4>
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={() => setCurrentMonth(prev => subWeeks(prev, 4))}
+                  className="w-5 h-5 flex items-center justify-center bg-white border border-zinc-100 rounded-lg text-zinc-400"
                 >
-                  <span className={cn(
-                    "text-[6px] font-black",
-                    isTodayDay ? "text-red-600" : "text-zinc-200"
-                  )}>
-                    {format(day, 'd')}
-                  </span>
-                  {total !== null && (
-                    <span className="text-[7px] font-black text-zinc-900 leading-none">
-                      {total}
-                    </span>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </section>
+                  <ChevronLeft className="w-2.5 h-2.5" />
+                </button>
+                <span className="text-[8px] font-black uppercase tracking-widest text-zinc-900 w-20 text-center">
+                  {format(currentMonth, 'MMM yy', { locale: ptBR })}
+                </span>
+                <button 
+                  onClick={() => setCurrentMonth(prev => addWeeks(prev, 4))}
+                  className="w-5 h-5 flex items-center justify-center bg-white border border-zinc-100 rounded-lg text-zinc-400"
+                >
+                  <ChevronRight className="w-2.5 h-2.5" />
+                </button>
+              </div>
+            </div>
 
-        <button 
-          onClick={onSettings}
-          className="w-full py-3 bg-zinc-50 border border-zinc-100 text-zinc-400 hover:text-zinc-900 rounded-xl text-[8px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2"
-        >
-          <Settings2 className="w-3 h-3" /> Preferências
-        </button>
-      </div>
+            <div className="grid grid-cols-7 gap-1">
+              {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map(d => (
+                <div key={d} className="text-center text-[7px] font-black text-zinc-300 py-0.5 uppercase">{d}</div>
+              ))}
+              {daysInMonth.map((day) => {
+                const total = getDayTotal(day);
+                const isTodayDay = isToday(day);
+                
+                return (
+                  <button 
+                    key={day.toISOString()}
+                    onClick={() => setSelectedDayToAdd(day)}
+                    className={cn(
+                      "aspect-square rounded-lg border border-zinc-100/50 flex flex-col items-center justify-center gap-0.5 transition-all active:scale-95",
+                      isTodayDay ? "border-red-500 bg-red-50/20" : "bg-white",
+                      total ? "bg-red-50" : ""
+                    )}
+                  >
+                    <span className={cn(
+                      "text-[6px] font-black",
+                      isTodayDay ? "text-red-600" : "text-zinc-200"
+                    )}>
+                      {format(day, 'd')}
+                    </span>
+                    {total !== null && (
+                      <span className="text-[7px] font-black text-zinc-900 leading-none">
+                        {total}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+            <p className="text-[7px] font-black uppercase tracking-widest text-zinc-300 text-center mt-3">
+              Clique no dia para adicionar valor
+            </p>
+          </section>
+
+          <button 
+            onClick={onSettings}
+            className="w-full py-3 bg-zinc-50 border border-zinc-100 text-zinc-400 hover:text-zinc-900 rounded-xl text-[8px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2"
+          >
+            <Settings2 className="w-3 h-3" /> Preferências
+          </button>
+        </div>
+      </Modal>
+
+      <DayValueModal
+        isOpen={!!selectedDayToAdd}
+        onClose={() => setSelectedDayToAdd(null)}
+        date={selectedDayToAdd}
+        onAdd={(val) => {
+          if (selectedDayToAdd) {
+            addGoalEntry(goal.id, val, selectedDayToAdd.toISOString());
+            setSelectedDayToAdd(null);
+          }
+        }}
+        unit={goal.unit}
+        type={goal.type}
+      />
+    </>
+  );
+}
+
+function DayValueModal({ isOpen, onClose, date, onAdd, unit, type }: { isOpen: boolean; onClose: () => void; date: Date | null; onAdd: (v: number) => void; unit: string; type: GoalType }) {
+  const [val, setVal] = useState('');
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const parsed = parseFloat(val);
+    if (!isNaN(parsed)) {
+      onAdd(parsed);
+      setVal('');
+      onClose();
+    }
+  };
+
+  if (!date) return null;
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title={format(date, "dd 'de' MMMM", { locale: ptBR })}>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400 ml-1">
+          {type === 'cumulative' ? 'Adicionar ao dia' : 'Definir valor do dia'}
+        </p>
+        <div className="flex gap-2">
+          <input
+            autoFocus
+            type="number"
+            required
+            value={val}
+            onChange={(e) => setVal(e.target.value)}
+            placeholder={`0 ${unit}`}
+            className="flex-1 h-12 bg-zinc-100 border-none rounded-2xl px-5 text-sm font-black text-zinc-900 shadow-inner focus:ring-1 focus:ring-red-500"
+          />
+          <Button type="submit" className="h-12 px-6 text-[10px] font-black uppercase tracking-widest">
+            Ok
+          </Button>
+        </div>
+      </form>
     </Modal>
   );
 }
@@ -504,6 +575,9 @@ function EditGoalModal({ goal, isOpen, onClose, onUpdate, onDelete, onReset }: {
   const [unit, setUnit] = useState(goal.unit);
   const [target, setTarget] = useState(goal.target?.toString() || '');
   const [description, setDescription] = useState(goal.description || '');
+  const [type, setType] = useState<GoalType>(goal.type);
+  const [initialValue, setInitialValue] = useState(goal.initialValue?.toString() || '');
+  const [direction, setDirection] = useState<'up' | 'down'>(goal.direction || 'up');
 
   const handleUpdate = (e: React.FormEvent) => {
     e.preventDefault();
@@ -511,7 +585,10 @@ function EditGoalModal({ goal, isOpen, onClose, onUpdate, onDelete, onReset }: {
       name,
       icon,
       unit,
+      type,
       target: target ? parseFloat(target) : undefined,
+      initialValue: initialValue ? parseFloat(initialValue) : undefined,
+      direction,
       description
     });
     onClose();
@@ -556,6 +633,71 @@ function EditGoalModal({ goal, isOpen, onClose, onUpdate, onDelete, onReset }: {
             />
           </div>
         </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label className="text-[8px] font-black uppercase tracking-widest text-zinc-400 ml-1">Tipo</label>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setType('cumulative')}
+              className={cn(
+                "py-2 px-2 rounded-xl text-[7px] font-black uppercase tracking-widest border transition-all",
+                type === 'cumulative' ? "bg-zinc-900 text-white border-zinc-900" : "bg-white text-zinc-400 border-zinc-100"
+              )}
+            >
+              Acumulada
+            </button>
+            <button
+              type="button"
+              onClick={() => setType('tracking')}
+              className={cn(
+                "py-2 px-2 rounded-xl text-[7px] font-black uppercase tracking-widest border transition-all",
+                type === 'tracking' ? "bg-zinc-900 text-white border-zinc-900" : "bg-white text-zinc-400 border-zinc-100"
+              )}
+            >
+              Evolução
+            </button>
+          </div>
+        </div>
+
+        {type === 'tracking' && (
+          <div className="space-y-3 pt-2 border-t border-zinc-50 animate-in fade-in slide-in-from-top-1">
+             <div className="flex flex-col gap-1.5">
+                <label className="text-[8px] font-black uppercase tracking-widest text-zinc-400 ml-1">Valor Inicial</label>
+                <input 
+                  type="number" 
+                  value={initialValue} 
+                  onChange={(e) => setInitialValue(e.target.value)}
+                  className="w-full h-9 bg-zinc-100 border-none rounded-xl px-4 text-[9px] font-bold text-zinc-900 shadow-inner"
+                />
+             </div>
+             <div className="flex flex-col gap-1.5">
+                <label className="text-[8px] font-black uppercase tracking-widest text-zinc-400 ml-1">Melhor quando...</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setDirection('up')}
+                    className={cn(
+                      "py-2 px-2 rounded-lg text-[7px] font-black uppercase tracking-widest border",
+                      direction === 'up' ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-white text-zinc-200 border-zinc-50"
+                    )}
+                  >
+                    ↑ Maior
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDirection('down')}
+                    className={cn(
+                      "py-2 px-2 rounded-lg text-[7px] font-black uppercase tracking-widest border",
+                      direction === 'down' ? "bg-amber-50 text-amber-600 border-amber-100" : "bg-white text-zinc-200 border-zinc-50"
+                    )}
+                  >
+                    ↓ Menor
+                  </button>
+                </div>
+             </div>
+          </div>
+        )}
 
         <div className="border-t border-zinc-100 pt-4 space-y-2">
           <div className="flex gap-2">

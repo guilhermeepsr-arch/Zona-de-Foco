@@ -149,11 +149,11 @@ export const useAppStore = create<AppState & AppActions>()(
         }));
       },
 
-      addGoalEntry: (goalId, value) => {
+      addGoalEntry: (goalId, value, date) => {
         const entry: GoalEntry = {
           id: generateId(),
           value,
-          date: new Date().toISOString(),
+          date: date || new Date().toISOString(),
         };
         set((state) => ({
           goals: state.goals.map((g) =>
