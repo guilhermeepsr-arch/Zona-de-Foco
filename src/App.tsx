@@ -6,6 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { Wallet, CheckSquare, Target, Calendar, ListChecks, BookOpen, LogOut, User } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from './lib/supabaseClient';
+import { useAppStore } from './store/useAppStore';
 import { Auth } from './components/Auth';
 import Finance from './modules/Finance';
 import Tasks from './modules/Tasks';
@@ -59,6 +60,8 @@ export default function App() {
         if (session?.user) {
           const p = await fetchProfile(session.user.id);
           setProfile(p);
+          // Load operational data
+          useAppStore.getState().loadData();
         }
       } catch (err) {
         console.error('Auth initialization error:', err);
@@ -86,6 +89,8 @@ export default function App() {
       setSession(session);
       if (session?.user) {
         fetchProfile(session.user.id).then(setProfile);
+        // Load operational data
+        useAppStore.getState().loadData();
       } else {
         setProfile(null);
       }
