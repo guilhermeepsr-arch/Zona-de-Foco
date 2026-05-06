@@ -32,6 +32,21 @@ export const useAppStore = create<AppState & AppActions>()((set, get) => ({
   // Load Data
   loadData: async () => {
     try {
+      console.log('Loading data from Supabase...');
+      
+      const fetchWithCatch = async (name: string, fetcher: () => Promise<any>) => {
+        try {
+          return await fetcher();
+        } catch (err: any) {
+          if (err.code === 'PGRST204' || err.code === 'PGRST205' || (err.message && err.message.includes('not found'))) {
+            console.warn(`Table for ${name} not found. Please run the SQL setup script.`);
+          } else {
+            console.error(`Error fetching ${name}:`, err);
+          }
+          return [];
+        }
+      };
+
       const [
         transactions,
         tasks,
@@ -40,12 +55,12 @@ export const useAppStore = create<AppState & AppActions>()((set, get) => ({
         lists,
         diaryEntries
       ] = await Promise.all([
-        supabaseService.fetchTransactions(),
-        supabaseService.fetchTasks(),
-        supabaseService.fetchGoals(),
-        supabaseService.fetchHabits(),
-        supabaseService.fetchLists(),
-        supabaseService.fetchDiaryEntries()
+        fetchWithCatch('transactions', () => supabaseService.fetchTransactions()),
+        fetchWithCatch('tasks', () => supabaseService.fetchTasks()),
+        fetchWithCatch('goals', () => supabaseService.fetchGoals()),
+        fetchWithCatch('habits', () => supabaseService.fetchHabits()),
+        fetchWithCatch('lists', () => supabaseService.fetchLists()),
+        fetchWithCatch('diaryEntries', () => supabaseService.fetchDiaryEntries())
       ]);
 
       set({
@@ -56,8 +71,9 @@ export const useAppStore = create<AppState & AppActions>()((set, get) => ({
         lists,
         diaryEntries
       });
+      console.log('Data loading complete (with individual checks).');
     } catch (error) {
-      console.error('Error loading data from Supabase:', error);
+      console.error('Critical error during loadData:', error);
     }
   },
 

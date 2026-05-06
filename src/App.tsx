@@ -30,12 +30,9 @@ export default function App() {
         .from('profiles')
         .select('*')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
       
-      if (error) {
-        console.warn('Profile not found or error:', error.message);
-        return null;
-      }
+      if (error) throw error;
       return data;
     } catch (err) {
       console.error('Error fetching profile:', err);
@@ -58,7 +55,14 @@ export default function App() {
         
         setSession(session);
         if (session?.user) {
-          const p = await fetchProfile(session.user.id);
+          let p = await fetchProfile(session.user.id);
+          
+          // Retry logic: Trigger might take a second to create the profile
+          if (!p) {
+            await new Promise(r => setTimeout(r, 1000));
+            p = await fetchProfile(session.user.id);
+          }
+          
           setProfile(p);
           // Load operational data
           useAppStore.getState().loadData();
