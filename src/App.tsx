@@ -48,28 +48,53 @@ export default function App() {
       return;
     }
 
-    // Check current session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setSession(session);
-      if (session?.user) {
-        const p = await fetchProfile(session.user.id);
-        setProfile(p);
+    const initAuth = async () => {
+      try {
+        console.log('Initializing auth...');
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) throw sessionError;
+        
+        setSession(session);
+        if (session?.user) {
+          const p = await fetchProfile(session.user.id);
+          setProfile(p);
+        }
+      } catch (err) {
+        console.error('Auth initialization error:', err);
+      } finally {
+        // Safety: Ensure loading is always disabled
+        setLoading(false);
       }
-      setLoading(false);
-    });
+    };
+
+    // Emergency timeout to prevent infinite loading
+    const timeoutId = setTimeout(() => {
+      setLoading(current => {
+        if (current) {
+          console.warn('Auth initialization timed out after 5s');
+          return false;
+        }
+        return false;
+      });
+    }, 5000);
+
+    initAuth();
 
     // Listen for changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       if (session?.user) {
-        const p = await fetchProfile(session.user.id);
-        setProfile(p);
+        fetchProfile(session.user.id).then(setProfile);
       } else {
         setProfile(null);
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      clearTimeout(timeoutId);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const handleSignOut = async () => {
