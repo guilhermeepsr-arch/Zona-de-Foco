@@ -161,7 +161,6 @@ export interface AppActions {
 
   // Global
   setTheme: (theme: 'light' | 'dark') => void;
-  loadData: () => Promise<void>;
 
   // Diary
   saveDiaryEntry: (date: string, content: string) => void;
