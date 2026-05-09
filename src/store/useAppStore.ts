@@ -6,7 +6,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { addMonths, formatISO, parseISO, startOfDay } from 'date-fns';
-import { AppState, AppActions, Transaction, Task, Goal, GoalEntry } from '../types';
+import { AppState, AppActions, Transaction, Task, Goal, GoalEntry, TimerSession } from '../types';
 
 const generateId = () => Math.random().toString(36).substring(2, 9);
 
@@ -21,19 +21,92 @@ export const useAppStore = create<AppState & AppActions>()(
       lists: [],
       habitTemplates: [],
       frequentTasks: [],
-      diaryEntries: [],
-      diaryTemplates: [
-        {
-          id: 'default-gratitude',
-          name: 'Gratidão & Destaque',
-          content: '3 coisas pelas quais sou grato hoje:\n1.\n2.\n3.\n\nCoisa interessante que aconteceu hoje:\n1.\n'
-        }
-      ],
+      studySubjects: [],
+      timerSessions: [],
+      activeTimer: null,
       theme: 'light',
 
       setTheme: (theme) => set({ theme }),
 
-      // Transactions
+      // Timer
+      addStudySubject: (name) =>
+        set((state) => ({
+          studySubjects: [...state.studySubjects, { id: generateId(), name }],
+        })),
+
+      deleteStudySubject: (id) =>
+        set((state) => ({
+          studySubjects: state.studySubjects.filter((s) => s.id !== id),
+        })),
+
+      startTimer: (subject, notes) =>
+        set({
+          activeTimer: {
+            subject,
+            notes,
+            startTime: new Date().toISOString(),
+            elapsedTime: 0,
+          },
+        }),
+
+      pauseTimer: () =>
+        set((state) => {
+          if (!state.activeTimer || !state.activeTimer.startTime) return state;
+          const now = new Date();
+          const start = new Date(state.activeTimer.startTime);
+          const diff = Math.floor((now.getTime() - start.getTime()) / 1000);
+          return {
+            activeTimer: {
+              ...state.activeTimer,
+              startTime: null,
+              elapsedTime: state.activeTimer.elapsedTime + diff,
+            },
+          };
+        }),
+
+      resumeTimer: () =>
+        set((state) => {
+          if (!state.activeTimer || state.activeTimer.startTime) return state;
+          return {
+            activeTimer: {
+              ...state.activeTimer,
+              startTime: new Date().toISOString(),
+            },
+          };
+        }),
+
+      saveTimer: () =>
+        set((state) => {
+          if (!state.activeTimer) return state;
+          let totalSeconds = state.activeTimer.elapsedTime;
+          if (state.activeTimer.startTime) {
+            const now = new Date();
+            const start = new Date(state.activeTimer.startTime);
+            totalSeconds += Math.floor((now.getTime() - start.getTime()) / 1000);
+          }
+
+          if (totalSeconds < 1) return { ...state, activeTimer: null };
+
+          const newSession: TimerSession = {
+            id: generateId(),
+            subject: state.activeTimer.subject,
+            duration: totalSeconds,
+            notes: state.activeTimer.notes,
+            date: new Date().toISOString(),
+          };
+
+          return {
+            timerSessions: [newSession, ...state.timerSessions],
+            activeTimer: null,
+          };
+        }),
+
+      cancelTimer: () => set({ activeTimer: null }),
+
+      deleteTimerSession: (id) =>
+        set((state) => ({
+          timerSessions: state.timerSessions.filter((s) => s.id !== id),
+        })),
       addTransaction: (data) => {
         const id = generateId();
         const mainTransaction: Transaction = { ...data, id };
@@ -394,27 +467,6 @@ export const useAppStore = create<AppState & AppActions>()(
           ),
         })),
 
-      // Diary
-      saveDiaryEntry: (date, content) =>
-        set((state) => {
-          const existingEntryIndex = state.diaryEntries.findIndex((e) => e.id === date);
-          if (existingEntryIndex !== -1) {
-            const newEntries = [...state.diaryEntries];
-            newEntries[existingEntryIndex] = { ...newEntries[existingEntryIndex], content };
-            return { diaryEntries: newEntries };
-          }
-          return { diaryEntries: [...state.diaryEntries, { id: date, content }] };
-        }),
-
-      addDiaryTemplate: (data) =>
-        set((state) => ({
-          diaryTemplates: [...state.diaryTemplates, { ...data, id: generateId() }],
-        })),
-
-      deleteDiaryTemplate: (id) =>
-        set((state) => ({
-          diaryTemplates: state.diaryTemplates.filter((t) => t.id !== id),
-        })),
     }),
     {
       name: 'organized-life-storage',

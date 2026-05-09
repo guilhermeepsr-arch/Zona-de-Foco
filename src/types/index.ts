@@ -85,15 +85,24 @@ export interface List {
   order: number;
 }
 
-export interface DiaryEntry {
-  id: string; // ISO date string (yyyy-mm-dd)
-  content: string;
-}
-
-export interface DiaryTemplate {
+export interface StudySubject {
   id: string;
   name: string;
-  content: string;
+}
+
+export interface TimerSession {
+  id: string;
+  subject: string;
+  duration: number; // in seconds
+  notes?: string;
+  date: string; // ISO string
+}
+
+export interface ActiveTimer {
+  subject: string;
+  startTime: string | null; // ISO string when started, null when paused
+  elapsedTime: number; // accumulated time in seconds
+  notes?: string;
 }
 
 export interface AppState {
@@ -103,8 +112,9 @@ export interface AppState {
   habits: Habit[];
   habitCategories: string[];
   lists: List[];
-  diaryEntries: DiaryEntry[];
-  diaryTemplates: DiaryTemplate[];
+  studySubjects: StudySubject[];
+  timerSessions: TimerSession[];
+  activeTimer: ActiveTimer | null;
   habitTemplates: string[];
   frequentTasks: string[];
   theme: 'light' | 'dark';
@@ -162,8 +172,13 @@ export interface AppActions {
   // Global
   setTheme: (theme: 'light' | 'dark') => void;
 
-  // Diary
-  saveDiaryEntry: (date: string, content: string) => void;
-  addDiaryTemplate: (template: Omit<DiaryTemplate, 'id'>) => void;
-  deleteDiaryTemplate: (id: string) => void;
+  // Timer
+  addStudySubject: (name: string) => void;
+  deleteStudySubject: (id: string) => void;
+  startTimer: (subject: string, notes?: string) => void;
+  pauseTimer: () => void;
+  resumeTimer: () => void;
+  saveTimer: () => void;
+  cancelTimer: () => void;
+  deleteTimerSession: (id: string) => void;
 }

@@ -4,16 +4,16 @@
  */
 
 import React, { useState } from 'react';
-import { Wallet, CheckSquare, Target, Calendar, ListChecks, BookOpen } from 'lucide-react';
+import { Wallet, CheckSquare, Target, Calendar, ListChecks, Timer as TimerIcon } from 'lucide-react';
 import Finance from './modules/Finance';
 import Tasks from './modules/Tasks';
 import Goals from './modules/Goals';
 import Habits from './modules/Habits';
 import Lists from './modules/Lists';
-import Diary from './modules/Diary';
+import Timer from './modules/Timer';
 import { cn } from './components/UI';
 
-type Module = 'finance' | 'tasks' | 'goals' | 'habits' | 'lists' | 'diary';
+type Module = 'finance' | 'tasks' | 'goals' | 'habits' | 'lists' | 'timer';
 
 export default function App() {
   const [activeModule, setActiveModule] = useState<Module>('tasks');
@@ -30,8 +30,8 @@ export default function App() {
         return <Habits onBack={() => {}} />;
       case 'lists':
         return <Lists onBack={() => {}} />;
-      case 'diary':
-        return <Diary onBack={() => {}} />;
+      case 'timer':
+        return <Timer onBack={() => {}} />;
       default:
         return <Tasks onBack={() => {}} />;
     }
@@ -43,7 +43,7 @@ export default function App() {
     { id: 'goals', icon: <Target className="w-5 h-5" />, label: "Metas" },
     { id: 'finance', icon: <Wallet className="w-5 h-5" />, label: "Finanças" },
     { id: 'lists', icon: <ListChecks className="w-5 h-5" />, label: "Listas" },
-    { id: 'diary', icon: <BookOpen className="w-5 h-5" />, label: "Diário" },
+    { id: 'timer', icon: <TimerIcon className="w-5 h-5" />, label: "Timer" },
   ];
 
   return (
