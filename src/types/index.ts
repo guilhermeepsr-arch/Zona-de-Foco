@@ -88,6 +88,7 @@ export interface List {
 export interface StudySubject {
   id: string;
   name: string;
+  color: string;
 }
 
 export interface TimerSession {
@@ -173,7 +174,8 @@ export interface AppActions {
   setTheme: (theme: 'light' | 'dark') => void;
 
   // Timer
-  addStudySubject: (name: string) => void;
+  addStudySubject: (name: string, color: string) => void;
+  updateStudySubject: (id: string, data: Partial<StudySubject>) => void;
   deleteStudySubject: (id: string) => void;
   startTimer: (subject: string, notes?: string) => void;
   pauseTimer: () => void;
@@ -181,4 +183,5 @@ export interface AppActions {
   saveTimer: () => void;
   cancelTimer: () => void;
   deleteTimerSession: (id: string) => void;
+  addManualSession: (session: Omit<TimerSession, 'id'>) => void;
 }

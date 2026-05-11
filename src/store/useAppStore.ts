@@ -29,9 +29,16 @@ export const useAppStore = create<AppState & AppActions>()(
       setTheme: (theme) => set({ theme }),
 
       // Timer
-      addStudySubject: (name) =>
+      addStudySubject: (name, color) =>
         set((state) => ({
-          studySubjects: [...state.studySubjects, { id: generateId(), name }],
+          studySubjects: [...state.studySubjects, { id: generateId(), name, color }],
+        })),
+
+      updateStudySubject: (id, data) =>
+        set((state) => ({
+          studySubjects: state.studySubjects.map((s) =>
+            s.id === id ? { ...s, ...data } : s
+          ),
         })),
 
       deleteStudySubject: (id) =>
@@ -106,6 +113,14 @@ export const useAppStore = create<AppState & AppActions>()(
       deleteTimerSession: (id) =>
         set((state) => ({
           timerSessions: state.timerSessions.filter((s) => s.id !== id),
+        })),
+
+      addManualSession: (data) =>
+        set((state) => ({
+          timerSessions: [
+            { ...data, id: generateId() },
+            ...state.timerSessions,
+          ],
         })),
       addTransaction: (data) => {
         const id = generateId();
