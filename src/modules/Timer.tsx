@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Play, Pause, Square, Plus, Trash2, History, Timer as TimerIcon, ChevronLeft, Save, BookOpen, Clock, ChevronRight, PieChart as PieChartIcon } from 'lucide-react';
+import { Play, Pause, Square, Plus, Trash2, History, Timer as TimerIcon, ChevronLeft, Save, BookOpen, Clock, ChevronRight, PieChart as PieChartIcon, Palette, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAppStore } from '../store/useAppStore';
 import { cn } from '../components/UI';
-import { format, startOfDay, subDays } from 'date-fns';
+import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
 interface TimerProps {
   onBack: () => void;
@@ -39,6 +39,10 @@ export default function Timer({ onBack }: TimerProps) {
   const [selectedSubject, setSelectedSubject] = useState('');
   const [notes, setNotes] = useState('');
   const [displayTime, setDisplayTime] = useState(0);
+
+  // Management states
+  const [isAddingSubject, setIsAddingSubject] = useState(false);
+  const [editingSubjectId, setEditingSubjectId] = useState<string | null>(null);
 
   // Manual entry states
   const [manualSubject, setManualSubject] = useState('');
@@ -328,39 +332,43 @@ export default function Timer({ onBack }: TimerProps) {
                   </div>
                 ) : (
                   <>
-                    <div className="h-[280px] w-full mb-8">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie
-                            data={subjectStats}
-                            cx="50%"
-                            cy="50%"
-                            innerRadius={60}
-                            outerRadius={80}
-                            paddingAngle={5}
-                            dataKey="value"
-                            stroke="none"
-                          >
-                            {subjectStats.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={entry.color} />
-                            ))}
-                          </Pie>
-                          <Tooltip 
-                            content={({ active, payload }) => {
-                              if (active && payload && payload.length) {
-                                return (
-                                  <div className="bg-white p-3 border border-zinc-100 rounded-xl shadow-xl">
-                                    <p className="text-xs font-bold uppercase tracking-widest text-zinc-900 mb-1 leading-none">{payload[0].name}</p>
-                                    <p className="text-sm font-mono font-black text-red-600 leading-none">{formatDuration(Number(payload[0].value))}</p>
-                                  </div>
-                                );
-                              }
-                              return null;
-                            }}
-                          />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    </div>
+                <div className="h-[280px] w-full mb-8 relative">
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Total</span>
+                    <span className="text-xl font-mono font-black text-zinc-900">{formatDuration(totalStudyTime)}</span>
+                  </div>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={subjectStats}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={65}
+                        outerRadius={85}
+                        paddingAngle={5}
+                        dataKey="value"
+                        stroke="none"
+                      >
+                        {subjectStats.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip 
+                        content={({ active, payload }) => {
+                          if (active && payload && payload.length) {
+                            return (
+                              <div className="bg-white p-3 border border-zinc-100 rounded-xl shadow-xl">
+                                <p className="text-xs font-bold uppercase tracking-widest text-zinc-900 mb-1 leading-none">{payload[0].name}</p>
+                                <p className="text-sm font-mono font-black text-red-600 leading-none">{formatDuration(Number(payload[0].value))}</p>
+                              </div>
+                            );
+                          }
+                          return null;
+                        }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
 
                     <div className="grid grid-cols-1 gap-3">
                       {subjectStats.map((stat) => (
@@ -389,51 +397,75 @@ export default function Timer({ onBack }: TimerProps) {
                 exit={{ opacity: 0, x: -20 }}
                 className="pt-4"
               >
-                <div className="flex items-center gap-2 mb-6">
-                  <button onClick={() => setView('main')} className="p-1 -ml-1 text-zinc-400">
-                    <ChevronLeft className="w-5 h-5" />
-                  </button>
-                  <h3 className="font-bold text-zinc-900">Gerenciar Matérias</h3>
+                <div className="flex items-center justify-between mb-8">
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => setView('main')} className="p-1 -ml-1 text-zinc-400">
+                      <ChevronLeft className="w-5 h-5" />
+                    </button>
+                    <h3 className="font-bold text-zinc-900">Gerenciar Matérias</h3>
+                  </div>
+                  {!isAddingSubject && !editingSubjectId && (
+                    <button 
+                      onClick={() => setIsAddingSubject(true)}
+                      className="text-xs font-black uppercase tracking-widest text-red-600 flex items-center gap-1 bg-red-50 px-3 py-2 rounded-lg"
+                    >
+                      <Plus className="w-3 h-3" /> Adicionar
+                    </button>
+                  )}
                 </div>
 
-                <div className="bg-white border border-zinc-100 rounded-2xl overflow-hidden mb-8">
-                  <div className="p-4 border-b border-zinc-50">
-                    <input
-                      type="text"
-                      value={newSubject}
-                      onChange={(e) => setNewSubject(e.target.value)}
-                      placeholder="Nome da matéria..."
-                      className="w-full px-0 bg-transparent border-none outline-none focus:ring-0 text-sm font-bold uppercase italic placeholder:text-zinc-300"
-                    />
-                  </div>
-                  <div className="p-4">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-3">Escolha uma cor</p>
-                    <div className="flex flex-wrap gap-2">
-                      {PRESET_COLORS.map(color => (
-                        <button
-                          key={color}
-                          onClick={() => setNewSubjectColor(color)}
-                          className={cn(
-                            "w-8 h-8 rounded-full transition-transform active:scale-95 border-2",
-                            newSubjectColor === color ? "border-zinc-900 scale-110" : "border-transparent"
-                          )}
-                          style={{ backgroundColor: color }}
+                <AnimatePresence>
+                  {isAddingSubject && (
+                    <motion.div 
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      className="bg-white border-2 border-red-100 rounded-2xl overflow-hidden mb-8 shadow-xl shadow-red-900/5"
+                    >
+                      <div className="p-4 border-b border-zinc-50 flex items-center justify-between">
+                        <input
+                          type="text"
+                          value={newSubject}
+                          onChange={(e) => setNewSubject(e.target.value)}
+                          placeholder="Nome da matéria..."
+                          className="flex-1 px-0 bg-transparent border-none outline-none focus:ring-0 text-sm font-bold uppercase italic placeholder:text-zinc-300"
+                          autoFocus
                         />
-                      ))}
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => {
-                      if (newSubject.trim()) {
-                        addStudySubject(newSubject.trim(), newSubjectColor);
-                        setNewSubject('');
-                      }
-                    }}
-                    className="w-full py-4 bg-zinc-900 text-white font-black uppercase tracking-widest text-[10px] active:scale-[0.98] transition-all"
-                  >
-                    Adicionar Matéria
-                  </button>
-                </div>
+                        <button onClick={() => setIsAddingSubject(false)} className="p-1 text-zinc-400">
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <div className="p-4">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-3">Escolha uma cor</p>
+                        <div className="flex flex-wrap gap-2">
+                          {PRESET_COLORS.map(color => (
+                            <button
+                              key={color}
+                              onClick={() => setNewSubjectColor(color)}
+                              className={cn(
+                                "w-8 h-8 rounded-full transition-transform active:scale-95 border-2",
+                                newSubjectColor === color ? "border-zinc-900 scale-110" : "border-transparent"
+                              )}
+                              style={{ backgroundColor: color }}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => {
+                          if (newSubject.trim()) {
+                            addStudySubject(newSubject.trim(), newSubjectColor);
+                            setNewSubject('');
+                            setIsAddingSubject(false);
+                          }
+                        }}
+                        className="w-full py-4 bg-red-600 text-white font-black uppercase tracking-widest text-[10px] active:scale-[0.98] transition-all"
+                      >
+                        Confirmar Nova Matéria
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
                 <div className="space-y-2">
                   <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-2 px-1">Matérias Existentes</p>
@@ -446,24 +478,69 @@ export default function Timer({ onBack }: TimerProps) {
                       const totalTime = timerSessions
                         .filter(s => s.subject === subject.name)
                         .reduce((acc, current) => acc + current.duration, 0);
+                      const isEditing = editingSubjectId === subject.id;
 
                       return (
-                        <div key={subject.id} className="p-4 bg-zinc-50 rounded-2xl border border-zinc-100 flex items-center justify-between group">
-                          <div className="flex items-center gap-3">
-                            <div className="w-1.5 h-10 rounded-full" style={{ backgroundColor: subject.color }} />
-                            <div>
-                              <span className="font-normal text-zinc-700 italic text-sm leading-none block mb-1">{subject.name}</span>
-                              <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest block leading-none">
-                                {totalTime > 0 ? `Total: ${formatDuration(totalTime)}` : 'Sem registros'}
-                              </span>
+                        <div key={subject.id} className="bg-zinc-50 rounded-2xl border border-zinc-100 overflow-hidden shadow-sm">
+                          <div className="p-4 flex items-center justify-between group">
+                            <div className="flex items-center gap-3">
+                              <div className="w-1.5 h-10 rounded-full" style={{ backgroundColor: subject.color }} />
+                              <div>
+                                <span className={cn("font-normal text-zinc-700 italic text-sm leading-none block mb-1", isEditing && "text-red-600 font-bold")}>
+                                  {subject.name}
+                                </span>
+                                <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest block leading-none">
+                                  {totalTime > 0 ? `Total: ${formatDuration(totalTime)}` : 'Sem registros'}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => setEditingSubjectId(isEditing ? null : subject.id)}
+                                className={cn(
+                                  "p-2 rounded-lg transition-colors",
+                                  isEditing ? "bg-red-100 text-red-600" : "text-zinc-300 hover:text-red-600 hover:bg-red-50"
+                                )}
+                              >
+                                <Palette className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => deleteStudySubject(subject.id)}
+                                className="p-2 text-zinc-300 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
                             </div>
                           </div>
-                          <button
-                            onClick={() => deleteStudySubject(subject.id)}
-                            className="p-2 text-zinc-300 hover:text-red-600 transition-colors"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                          
+                          <AnimatePresence>
+                            {isEditing && (
+                              <motion.div
+                                initial={{ height: 0 }}
+                                animate={{ height: 'auto' }}
+                                exit={{ height: 0 }}
+                                className="px-4 pb-4 border-t border-zinc-100 bg-white"
+                              >
+                                <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400 my-3">Alterar cor de "{subject.name}"</p>
+                                <div className="flex flex-wrap gap-2">
+                                  {PRESET_COLORS.map(color => (
+                                    <button
+                                      key={color}
+                                      onClick={() => {
+                                        updateStudySubject(subject.id, { color });
+                                        setEditingSubjectId(null);
+                                      }}
+                                      className={cn(
+                                        "w-7 h-7 rounded-full transition-transform active:scale-90 border-2",
+                                        subject.color === color ? "border-zinc-900 scale-110" : "border-transparent"
+                                      )}
+                                      style={{ backgroundColor: color }}
+                                    />
+                                  ))}
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
                         </div>
                       );
                     })
@@ -639,7 +716,11 @@ export default function Timer({ onBack }: TimerProps) {
               >
                 <div className="w-48 h-48 rounded-full bg-zinc-50 border border-zinc-100 flex items-center justify-center mb-8 relative group">
                   <div className="absolute inset-0 rounded-full bg-red-500/5 scale-0 group-hover:scale-100 transition-transform duration-500" />
-                  <Clock className="w-20 h-20 text-zinc-200 group-hover:text-red-100 transition-colors" strokeWidth={1} />
+                  <div className="flex flex-col items-center">
+                    <Clock className="w-12 h-12 text-zinc-200 group-hover:text-red-100 transition-colors mb-2" strokeWidth={1} />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 leading-none">Total</span>
+                    <span className="text-lg font-mono font-black text-zinc-900 leading-none mt-1">{formatDuration(totalStudyTime)}</span>
+                  </div>
                 </div>
                 
                 <h2 className="text-2xl font-black text-zinc-900 text-center mb-2 italic uppercase">Estudo Focado</h2>
